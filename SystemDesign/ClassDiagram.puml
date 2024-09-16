@@ -54,6 +54,31 @@ package "DOMAIN LAYER" {
 
     }
 
+    package "Repositories" {
+        interface IRepository<T extends EntityBase> {
+            +bool Save(T item)
+            +bool Update(T item)
+            +bool Delete(T item)
+            +T GetById(Guid itemId)
+            +List<T> GetAll()
+        }
+
+        interface IUserRepository extends IRepository<User> {
+        }
+
+        interface IExpenseRepository extends IRepository<Expense> {
+        }
+
+        interface IIncomeRepository extends IRepository<Income> {
+        }
+
+        interface IBudgetRepository extends IRepository<Budget> {
+        }
+
+        interface IGoalRepository extends IRepository<Goal> {
+        }
+    }
+
 }
 
 @enduml
