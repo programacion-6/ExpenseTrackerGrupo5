@@ -79,6 +79,32 @@ package "DOMAIN LAYER" {
         }
     }
 
+    package "Validators" {
+        interface IValidator<T> {
+            +void Validate(T entity)
+        }
+
+        interface IUserValidator extends IValidator<User> {
+            +void Validate(User user)
+        }
+
+        interface IExpenseValidator extends IValidator<Expense> {
+            +void Validate(Expense expense)
+        }
+
+        interface IIncomeValidator extends IValidator<Income> {
+            +void Validate(Income income)
+        }
+
+        interface IBudgetValidator extends IValidator<Budget> {
+            +void Validate(Budget budget)
+        }
+
+        interface IGoalValidator extends IValidator<Goal> {
+            +void Validate(Goal goal)
+        }
+    }
+
 }
 
 @enduml
