@@ -1,0 +1,59 @@
+@startuml ExpenseTracker - Group5
+
+package "DOMAIN LAYER" {
+
+    package "Entities" {
+        interface EntityBase {
+            +Guid Id
+        }
+
+        class User implements EntityBase {
+            +string Name
+            +string Email
+            +string PasswordHash
+            +DateTime CreatedAt
+        }
+
+        class Expense implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal Amount
+            +string Description
+            +string Category
+            +DateTime Date
+            +DateTime CreatedAt
+            +boolean IsRecurrent
+            +DateTime LastCalculation
+        }
+
+        class Income implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal Amount
+            +string Source
+            +DateTime Date
+            +DateTime CreatedAt
+        }
+
+        class Budget implements EntityBase {
+            +Guid UserId
+            +DateTime Month
+            +string Currency
+            +decimal Amount
+            +decimal CurrentAmount
+        }
+
+        class Goal implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal GoalAmount
+            +DateTime Deadline
+            +decimal CurrentAmount
+            +DateTime CreatedAt
+        }
+
+    }
+
+}
+
+@enduml
