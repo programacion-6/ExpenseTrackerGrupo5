@@ -64,18 +64,29 @@ package "DOMAIN LAYER" {
         }
 
         interface IUserRepository extends IRepository<User> {
+            +User GetByEmail(string email)
         }
 
         interface IExpenseRepository extends IRepository<Expense> {
+            +List<Expense> GetByDateRange(DateTime startDate, DateTime endDate)
+            +List<Expense> GetByCategory(string category)
+            +List<Expense> GetRecurrentExpenses()
         }
 
         interface IIncomeRepository extends IRepository<Income> {
+            +List<Income> GetByDateRange(DateTime startDate, DateTime endDate)
+            +List<Income> GetBySource(string source)
         }
 
         interface IBudgetRepository extends IRepository<Budget> {
+            +Budget GetCurrentBudget()
+            +Budget GetByMonth(DateTime month)
+            +List<Budget> GetByAmountRange(decimal minAmount, decimal maxAmount)
         }
 
         interface IGoalRepository extends IRepository<Goal> {
+            +List<Goal> GetCurrentGoals()
+            +List<Goal> GetByGoalAmountRange(decimal minGoal, decimal maxGoal)
         }
     }
 
