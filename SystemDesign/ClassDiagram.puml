@@ -55,7 +55,7 @@ package "DOMAIN LAYER" {
     }
 
     package "Repositories" {
-        interface IRepository<T extends EntityBase> {
+        interface IRepository<T implements EntityBase> {
             +bool Save(T item)
             +bool Update(T item)
             +bool Delete(T item)
@@ -116,6 +116,17 @@ package "DOMAIN LAYER" {
         }
     }
 
+    package "Utils" {
+        class IEncryptor {
+            + Encrypt(string text)
+            + Decrypt(string text)
+        }
+
+        interface ITokenHandler {
+            +string GenerateToken(User user)
+        }
+    }
+
 }
 
 package "APLICATION LAYER" {
@@ -168,6 +179,49 @@ package "APLICATION LAYER" {
         IncomeValidator ..|> IIncomeValidator
         BudgetValidator ..|> IBudgetValidator
         GoalValidator ..|> IGoalValidator
+    }
+
+    package "Utils" {
+        class Encryptor {
+        }
+
+        class TokenHandler {
+        }
+
+        TokenHandler ..|> ITokenHandler
+        Encryptor ..|> IEncryptor
+    }
+
+    package "Services" {
+        class AuthenticationService {
+            -IUserRepository userRepository
+            -IUserValidator userValidator
+            -ITokenHandler tokenHandler
+            -IEncryptor encryptor
+
+            +void Register(string name, string email, string password)
+            +string Login(string email, string password)
+        }
+
+        class UserManagementService {
+            -IUserRepository userRepository
+            -IUserValidator userValidator
+            -ITokenHandler tokenHandler
+            -IEncryptor encryptor
+
+            +void ResetPassword(string email, string newPassword)
+            +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
+        }
+
+        AuthenticationService *-- IUserRepository
+        AuthenticationService *-- IUserValidator
+        AuthenticationService *-- ITokenHandler
+        AuthenticationService *-- IEncryptor
+
+        UserManagementService *-- IUserRepository
+        UserManagementService *-- IUserValidator
+        UserManagementService *-- ITokenHandler
+        UserManagementService *-- IEncryptor
     }
 }
 
