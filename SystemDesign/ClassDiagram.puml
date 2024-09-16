@@ -107,4 +107,57 @@ package "DOMAIN LAYER" {
 
 }
 
+package "APLICATION LAYER" {
+    package "Repositories" {
+        class UserRepository {
+        }
+
+        class ExpenseRepository {
+        }
+
+        class IncomeRepository {
+        }
+
+        class BudgetRepository {
+        }
+
+        class GoalRepository {
+        }
+
+        UserRepository ..|> IUserRepository
+        ExpenseRepository ..|> IExpenseRepository
+        IncomeRepository ..|> IIncomeRepository
+        BudgetRepository ..|> IBudgetRepository
+        GoalRepository ..|> IGoalRepository
+    }
+
+    package "Validators" {
+        class UserValidator {
+            +void Validate(User user)
+        }
+
+        class ExpenseValidator {
+            +void Validate(Expense expense)
+        }
+
+        class IncomeValidator {
+            +void Validate(Income income)
+        }
+
+        class BudgetValidator {
+            +void Validate(Budget budget)
+        }
+
+        class GoalValidator {
+            +void Validate(Goal goal)
+        }
+
+        UserValidator ..|> IUserValidator
+        ExpenseValidator ..|> IExpenseValidator
+        IncomeValidator ..|> IIncomeValidator
+        BudgetValidator ..|> IBudgetValidator
+        GoalValidator ..|> IGoalValidator
+    }
+}
+
 @enduml
