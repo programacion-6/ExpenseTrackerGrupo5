@@ -125,6 +125,10 @@ package "DOMAIN LAYER" {
         interface ITokenHandler {
             +string GenerateToken(User user)
         }
+
+        interface IUserNotificator {
+            +void NotifyUser(User user, string message)
+        }
     }
 
 }
@@ -188,6 +192,11 @@ package "APLICATION LAYER" {
         class TokenHandler {
         }
 
+        class EmailNotificator {
+            +void NotifyUser(User user, string message)
+        }
+
+        EmailNotificator ..|> IUserNotificator
         TokenHandler ..|> ITokenHandler
         Encryptor ..|> IEncryptor
     }
@@ -236,6 +245,52 @@ package "APLICATION LAYER" {
             +List<Income> GetIncomesBySource(string source)
             +List<Income> GetIncomesByDateRange(DateTime start, DateTime end)
         }
+
+        class BudgetService {
+            -IBudgetRepository budgetRepository
+            -IBudgetValidator budgetValidator
+            -IUserNotificator userNotificator
+
+            +void AddBudget(Budget budget)
+            +void UpdateBudget(Budget budget)
+            +void DeleteBudget(Guid budgetId)
+            +Budget GetCurrentBudget()
+            +Budget GetByMonth(DateTime month)
+            +List<Budget> FilterByAmountRange(decimal minAmount, decimal maxAmount)
+        }
+
+        class GoalService {
+            -IGoalRepository goalRepository
+            -IGoalValidator goalValidator
+            -IUserNotificator userNotificator
+
+            +void AddGoal(Goal goal)
+            +void UpdateGoal(Goal goal)
+            +void DeleteGoal(Guid goalId)
+            +void GetCurrentGoals()
+            +List<Goal> FilterByAmountRange(decimal minGoal, decimal maxGoal)
+        }
+
+        class RecurringExpenseService {
+            -IExpenseRepository expenseRepository
+            -IExpenseValidator expenseValidator
+
+            +void AddRecurringExpense(Expense expense)
+            +void UpdateRecurringExpense(Expense expense)
+            +void DeleteRecurringExpense(Guid expenseId)
+            +void CalculateRecurringExpense()
+        }
+
+        BudgetService *-- IBudgetRepository
+        BudgetService *-- IBudgetValidator
+        BudgetService *-- IUserNotificator
+
+        GoalService *-- IGoalRepository
+        GoalService *-- IGoalValidator
+        GoalService *-- IUserNotificator
+
+        RecurringExpenseService *-- IExpenseRepository
+        RecurringExpenseService *-- IExpenseValidator
 
         ExpenseService *-- IExpenseRepository
         ExpenseService *-- IExpenseValidator
