@@ -62,13 +62,13 @@ package "DOMAIN LAYER" {
                 +string Email
                 +string Password
             }
-    
+
             class UpdateUserRequest {
                 +string Name
                 +string Email
                 +string Password
             }
-    
+
             class UserResponse {
                 +Guid Id
                 +string Name
@@ -76,7 +76,7 @@ package "DOMAIN LAYER" {
                 +DateTime CreatedAt
             }
         }
-    
+
         package "Expense DTOs" {
             class CreateExpenseRequest {
                 +decimal Amount
@@ -86,8 +86,9 @@ package "DOMAIN LAYER" {
                 +string Currency
                 +boolean IsRecurrent
             }
-    
+
             class UpdateExpenseRequest {
+                +Guid Id
                 +decimal Amount
                 +string Description
                 +string Category
@@ -95,7 +96,7 @@ package "DOMAIN LAYER" {
                 +string Currency
                 +boolean IsRecurrent
             }
-    
+
             class ExpenseResponse {
                 +Guid Id
                 +decimal Amount
@@ -107,7 +108,7 @@ package "DOMAIN LAYER" {
                 +string Currency
             }
         }
-    
+
         package "Income DTOs" {
             class CreateIncomeRequest {
                 +decimal Amount
@@ -115,14 +116,15 @@ package "DOMAIN LAYER" {
                 +DateTime Date
                 +string Currency
             }
-    
+
             class UpdateIncomeRequest {
+                +Guid Id
                 +decimal Amount
                 +string Source
                 +DateTime Date
                 +string Currency
             }
-    
+
             class IncomeResponse {
                 +Guid Id
                 +decimal Amount
@@ -132,20 +134,21 @@ package "DOMAIN LAYER" {
                 +string Currency
             }
         }
-    
+
         package "Budget DTOs" {
             class CreateBudgetRequest {
                 +DateTime Month
                 +string Currency
                 +decimal Amount
             }
-    
+
             class UpdateBudgetRequest {
+                +Guid Id
                 +DateTime Month
                 +string Currency
                 +decimal Amount
             }
-    
+
             class BudgetResponse {
                 +Guid Id
                 +DateTime Month
@@ -154,20 +157,21 @@ package "DOMAIN LAYER" {
                 +string Currency
             }
         }
-    
+
         package "Goal DTOs" {
             class CreateGoalRequest {
                 +decimal GoalAmount
                 +DateTime Deadline
                 +string Currency
             }
-    
+
             class UpdateGoalRequest {
+                +Guid Id
                 +decimal GoalAmount
                 +DateTime Deadline
                 +string Currency
             }
-    
+
             class GoalResponse {
                 +Guid Id
                 +decimal GoalAmount
@@ -177,7 +181,7 @@ package "DOMAIN LAYER" {
                 +string Currency
             }
         }
-    
+
         package "Report DTOs" {
             class MonthlySummary {
                 +decimal TotalIncome
@@ -186,7 +190,7 @@ package "DOMAIN LAYER" {
                 +string HighestSpendingCategory
                 +string Currency
             }
-    
+
             class ExpenseInsightsResponse {
                 +decimal TotalExpenses
                 +string HighestSpendingCategory
@@ -273,6 +277,12 @@ package "DOMAIN LAYER" {
         }
     }
 
+    package "Mappers" {
+        interface IMapper<S, D> {
+            +D Map(S source)
+        }
+    }
+
 }
 
 package "APLICATION LAYER" {
@@ -341,6 +351,98 @@ package "APLICATION LAYER" {
         EmailNotificator ..|> IUserNotificator
         TokenHandler ..|> ITokenHandler
         Encryptor ..|> IEncryptor
+    }
+
+    package "Mappers" {
+
+        package "User Mappers" {
+            class CreateUserRequestMapper {
+                +User Map(CreateUserRequest dto)
+            }
+
+            class UpdateUserRequestMapper {
+                +User Map(UpdateUserRequest dto)
+            }
+
+            class UserResponseMapper {
+                +UserResponse Map(User entity)
+            }
+        }
+        
+        CreateUserRequestMapper ..|> IMapper
+        UserResponseMapper ..|> IMapper
+        UpdateUserRequestMapper ..|> IMapper
+
+        package "Expense Mappers" {
+            class CreateExpenseRequestMapper {
+                +Expense Map(CreateExpenseRequest dto)
+            }
+
+            class UpdateExpenseRequestMapper {
+                +Expense Map(UpdateExpenseRequest dto)
+            }
+
+            class ExpenseResponseMapper {
+                +ExpenseResponse Map(Expense entity)
+            }
+
+            CreateExpenseRequestMapper ..|> IMapper
+            UpdateExpenseRequestMapper ..|> IMapper
+            ExpenseResponseMapper ..|> IMapper
+        }
+
+        package "Income Mappers" {
+            class CreateIncomeRequestMapper {
+                +Income Map(CreateIncomeRequest dto)
+            }
+
+            class UpdateIncomeRequestMapper {
+                +Income Map(UpdateIncomeRequest dto)
+            }
+
+            class IncomeResponseMapper {
+                +IncomeResponse Map(Income entity)
+            }
+
+            CreateIncomeRequestMapper ..|> IMapper
+            UpdateIncomeRequestMapper ..|> IMapper
+            IncomeResponseMapper ..|> IMapper
+        }
+
+        package "Budget Mappers" {
+            class CreateBudgetRequestMapper {
+                +Budget Map(CreateBudgetRequest dto)
+            }
+
+            class UpdateBudgetRequestMapper {
+                +Budget Map(UpdateBudgetRequest dto)
+            }
+
+            class BudgetResponseMapper {
+                +BudgetResponse Map(Budget entity)
+            }
+            CreateBudgetRequestMapper ..|> IMapper
+            UpdateBudgetRequestMapper ..|> IMapper
+            BudgetResponseMapper ..|> IMapper
+        }
+
+        package "Goal Mappers" {
+            class CreateGoalRequestMapper {
+                +Goal Map(CreateGoalRequest dto)
+            }
+
+            class UpdateGoalRequestMapper {
+                +Goal Map(UpdateGoalRequest dto)
+            }
+
+            class GoalResponseMapper {
+                +GoalResponse Map(Goal entity)
+            }
+
+            CreateGoalRequestMapper ..|> IMapper
+            UpdateGoalRequestMapper ..|> IMapper
+            GoalResponseMapper ..|> IMapper
+        }
     }
 
     package "Services" {
