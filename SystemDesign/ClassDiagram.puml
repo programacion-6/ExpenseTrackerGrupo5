@@ -213,6 +213,35 @@ package "APLICATION LAYER" {
             +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
         }
 
+        class ExpenseService {
+            -IExpenseRepository expenseRepository
+            -IExpenseValidator expenseValidator
+
+            +void AddExpense(Expense expense)
+            +void UpdateExpense(Expense expense)
+            +void DeleteExpense(Guid expenseId)
+            +Expense GetExpenseById(Guid expenseId)
+            +List<Expense> GetExpensesByCategory(string category)
+            +List<Expense> GetExpensesByDateRange(DateTime start, DateTime end)
+        }
+
+        class IncomeService {
+            -IIncomeRepository incomeRepository
+            -IIncomeValidator incomeValidator
+
+            +void AddIncome(Income income)
+            +void UpdateIncome(Income income)
+            +void DeleteIncome(Guid incomeId)
+            +Income GetIncomeById(Guid incomeId)
+            +List<Income> GetIncomesBySource(string source)
+            +List<Income> GetIncomesByDateRange(DateTime start, DateTime end)
+        }
+
+        ExpenseService *-- IExpenseRepository
+        ExpenseService *-- IExpenseValidator
+        IncomeService *-- IIncomeRepository
+        IncomeService *-- IIncomeValidator
+
         AuthenticationService *-- IUserRepository
         AuthenticationService *-- IUserValidator
         AuthenticationService *-- ITokenHandler
