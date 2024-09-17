@@ -236,32 +236,6 @@ package "DOMAIN LAYER" {
         }
     }
 
-    package "Validators" {
-        interface IValidator<T> {
-            +void Validate(T entity)
-        }
-
-        interface IUserValidator extends IValidator<User> {
-            +void Validate(User user)
-        }
-
-        interface IExpenseValidator extends IValidator<Expense> {
-            +void Validate(Expense expense)
-        }
-
-        interface IIncomeValidator extends IValidator<Income> {
-            +void Validate(Income income)
-        }
-
-        interface IBudgetValidator extends IValidator<Budget> {
-            +void Validate(Budget budget)
-        }
-
-        interface IGoalValidator extends IValidator<Goal> {
-            +void Validate(Goal goal)
-        }
-    }
-
     package "Utils" {
         class IEncryptor {
             + Encrypt(string text)
@@ -307,34 +281,6 @@ package "APLICATION LAYER" {
         IncomeRepository ..|> IIncomeRepository
         BudgetRepository ..|> IBudgetRepository
         GoalRepository ..|> IGoalRepository
-    }
-
-    package "Validators" {
-        class UserValidator {
-            +void Validate(User user)
-        }
-
-        class ExpenseValidator {
-            +void Validate(Expense expense)
-        }
-
-        class IncomeValidator {
-            +void Validate(Income income)
-        }
-
-        class BudgetValidator {
-            +void Validate(Budget budget)
-        }
-
-        class GoalValidator {
-            +void Validate(Goal goal)
-        }
-
-        UserValidator ..|> IUserValidator
-        ExpenseValidator ..|> IExpenseValidator
-        IncomeValidator ..|> IIncomeValidator
-        BudgetValidator ..|> IBudgetValidator
-        GoalValidator ..|> IGoalValidator
     }
 
     package "Utils" {
@@ -448,7 +394,6 @@ package "APLICATION LAYER" {
     package "Services" {
         class AuthenticationService {
             -IUserRepository userRepository
-            -IUserValidator userValidator
             -ITokenHandler tokenHandler
             -IEncryptor encryptor
 
@@ -458,7 +403,6 @@ package "APLICATION LAYER" {
 
         class UserManagementService {
             -IUserRepository userRepository
-            -IUserValidator userValidator
             -ITokenHandler tokenHandler
             -IEncryptor encryptor
 
@@ -468,7 +412,6 @@ package "APLICATION LAYER" {
 
         class ExpenseService {
             -IExpenseRepository expenseRepository
-            -IExpenseValidator expenseValidator
 
             +void AddExpense(Expense expense)
             +void UpdateExpense(Expense expense)
@@ -480,7 +423,6 @@ package "APLICATION LAYER" {
 
         class IncomeService {
             -IIncomeRepository incomeRepository
-            -IIncomeValidator incomeValidator
 
             +void AddIncome(Income income)
             +void UpdateIncome(Income income)
@@ -492,7 +434,6 @@ package "APLICATION LAYER" {
 
         class BudgetService {
             -IBudgetRepository budgetRepository
-            -IBudgetValidator budgetValidator
             -IUserNotificator userNotificator
 
             +void AddBudget(Budget budget)
@@ -505,7 +446,6 @@ package "APLICATION LAYER" {
 
         class GoalService {
             -IGoalRepository goalRepository
-            -IGoalValidator goalValidator
             -IUserNotificator userNotificator
 
             +void AddGoal(Goal goal)
@@ -517,7 +457,6 @@ package "APLICATION LAYER" {
 
         class RecurringExpenseService {
             -IExpenseRepository expenseRepository
-            -IExpenseValidator expenseValidator
 
             +void AddRecurringExpense(Expense expense)
             +void UpdateRecurringExpense(Expense expense)
@@ -526,28 +465,21 @@ package "APLICATION LAYER" {
         }
 
         BudgetService *-- IBudgetRepository
-        BudgetService *-- IBudgetValidator
         BudgetService *-- IUserNotificator
 
         GoalService *-- IGoalRepository
-        GoalService *-- IGoalValidator
         GoalService *-- IUserNotificator
 
         RecurringExpenseService *-- IExpenseRepository
-        RecurringExpenseService *-- IExpenseValidator
 
         ExpenseService *-- IExpenseRepository
-        ExpenseService *-- IExpenseValidator
         IncomeService *-- IIncomeRepository
-        IncomeService *-- IIncomeValidator
 
         AuthenticationService *-- IUserRepository
-        AuthenticationService *-- IUserValidator
         AuthenticationService *-- ITokenHandler
         AuthenticationService *-- IEncryptor
 
         UserManagementService *-- IUserRepository
-        UserManagementService *-- IUserValidator
         UserManagementService *-- ITokenHandler
         UserManagementService *-- IEncryptor
     }
