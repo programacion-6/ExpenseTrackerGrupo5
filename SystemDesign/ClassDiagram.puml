@@ -54,6 +54,148 @@ package "DOMAIN LAYER" {
 
     }
 
+    package "DTOs" {
+
+        package "User DTOs" {
+            class CreateUserRequest {
+                +string Name
+                +string Email
+                +string Password
+            }
+    
+            class UpdateUserRequest {
+                +string Name
+                +string Email
+                +string Password
+            }
+    
+            class UserResponse {
+                +Guid Id
+                +string Name
+                +string Email
+                +DateTime CreatedAt
+            }
+        }
+    
+        package "Expense DTOs" {
+            class CreateExpenseRequest {
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +string Currency
+                +boolean IsRecurrent
+            }
+    
+            class UpdateExpenseRequest {
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +string Currency
+                +boolean IsRecurrent
+            }
+    
+            class ExpenseResponse {
+                +Guid Id
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +DateTime CreatedAt
+                +boolean IsRecurrent
+                +string Currency
+            }
+        }
+    
+        package "Income DTOs" {
+            class CreateIncomeRequest {
+                +decimal Amount
+                +string Source
+                +DateTime Date
+                +string Currency
+            }
+    
+            class UpdateIncomeRequest {
+                +decimal Amount
+                +string Source
+                +DateTime Date
+                +string Currency
+            }
+    
+            class IncomeResponse {
+                +Guid Id
+                +decimal Amount
+                +string Source
+                +DateTime Date
+                +DateTime CreatedAt
+                +string Currency
+            }
+        }
+    
+        package "Budget DTOs" {
+            class CreateBudgetRequest {
+                +DateTime Month
+                +string Currency
+                +decimal Amount
+            }
+    
+            class UpdateBudgetRequest {
+                +DateTime Month
+                +string Currency
+                +decimal Amount
+            }
+    
+            class BudgetResponse {
+                +Guid Id
+                +DateTime Month
+                +decimal Amount
+                +decimal CurrentAmount
+                +string Currency
+            }
+        }
+    
+        package "Goal DTOs" {
+            class CreateGoalRequest {
+                +decimal GoalAmount
+                +DateTime Deadline
+                +string Currency
+            }
+    
+            class UpdateGoalRequest {
+                +decimal GoalAmount
+                +DateTime Deadline
+                +string Currency
+            }
+    
+            class GoalResponse {
+                +Guid Id
+                +decimal GoalAmount
+                +decimal CurrentAmount
+                +DateTime Deadline
+                +DateTime CreatedAt
+                +string Currency
+            }
+        }
+    
+        package "Report DTOs" {
+            class MonthlySummary {
+                +decimal TotalIncome
+                +decimal TotalExpenses
+                +decimal RemainingBudget
+                +string HighestSpendingCategory
+                +string Currency
+            }
+    
+            class ExpenseInsightsResponse {
+                +decimal TotalExpenses
+                +string HighestSpendingCategory
+                +DateTime MostExpensiveMonth
+                +string Currency
+            }
+        }
+    }
+
     package "Repositories" {
         interface IRepository<T implements EntityBase> {
             +bool Save(T item)
