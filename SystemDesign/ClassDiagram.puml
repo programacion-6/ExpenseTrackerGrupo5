@@ -88,7 +88,6 @@ package "DOMAIN LAYER" {
             }
 
             class UpdateExpenseRequest {
-                +Guid Id
                 +decimal Amount
                 +string Description
                 +string Category
@@ -118,7 +117,6 @@ package "DOMAIN LAYER" {
             }
 
             class UpdateIncomeRequest {
-                +Guid Id
                 +decimal Amount
                 +string Source
                 +DateTime Date
@@ -143,7 +141,6 @@ package "DOMAIN LAYER" {
             }
 
             class UpdateBudgetRequest {
-                +Guid Id
                 +DateTime Month
                 +string Currency
                 +decimal Amount
@@ -166,7 +163,6 @@ package "DOMAIN LAYER" {
             }
 
             class UpdateGoalRequest {
-                +Guid Id
                 +decimal GoalAmount
                 +DateTime Deadline
                 +string Currency
@@ -246,7 +242,7 @@ package "DOMAIN LAYER" {
             +string GenerateToken(User user)
         }
 
-        interface IUserNotificator {
+        interface IUserNotifier {
             +void NotifyUser(User user, string message)
         }
     }
@@ -294,7 +290,7 @@ package "APLICATION LAYER" {
             +void NotifyUser(User user, string message)
         }
 
-        EmailNotificator ..|> IUserNotificator
+        EmailNotificator ..|> IUserNotifier
         TokenHandler ..|> ITokenHandler
         Encryptor ..|> IEncryptor
     }
@@ -405,6 +401,7 @@ package "APLICATION LAYER" {
             -IUserRepository userRepository
             -ITokenHandler tokenHandler
             -IEncryptor encryptor
+            -IUserNotifier userNotifier
 
             +void ResetPassword(string email, string newPassword)
             +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
@@ -434,7 +431,7 @@ package "APLICATION LAYER" {
 
         class BudgetService {
             -IBudgetRepository budgetRepository
-            -IUserNotificator userNotificator
+            -IUserNotifier userNotificator
 
             +void AddBudget(Budget budget)
             +void UpdateBudget(Budget budget)
@@ -446,7 +443,7 @@ package "APLICATION LAYER" {
 
         class GoalService {
             -IGoalRepository goalRepository
-            -IUserNotificator userNotificator
+            -IUserNotifier userNotificator
 
             +void AddGoal(Goal goal)
             +void UpdateGoal(Goal goal)
@@ -465,10 +462,10 @@ package "APLICATION LAYER" {
         }
 
         BudgetService *-- IBudgetRepository
-        BudgetService *-- IUserNotificator
+        BudgetService *-- IUserNotifier
 
         GoalService *-- IGoalRepository
-        GoalService *-- IUserNotificator
+        GoalService *-- IUserNotifier
 
         RecurringExpenseService *-- IExpenseRepository
 
@@ -482,7 +479,115 @@ package "APLICATION LAYER" {
         UserManagementService *-- IUserRepository
         UserManagementService *-- ITokenHandler
         UserManagementService *-- IEncryptor
+        UserManagementService *-- IUserNotifier
     }
 }
+
+package "PRESENTATION LAYER" {
+    
+    class AuthController {
+        -AuthenticationService authService
+        -UserManagementService userManagementService
+        -CreateUserRequestMapper createUserMapper
+        -UserResponseMapper userResponseMapper
+        
+        +string Register(CreateUserRequest request)
+        +string Login(string email, string password)
+        +void ResetPassword(string email)
+        +void VerifyPasswordReset(string code, string email, string password)
+    }
+
+    class UserController {
+        -UserManagementService userManagementService
+        -UpdateUserRequestMapper updateUserMapper
+        -UserResponseMapper userResponseMapper
+        
+        +void UpdateProfile(UpdateUserRequest request)
+    }
+
+    class ExpenseController {
+        -ExpenseService expenseService
+        -CreateExpenseRequestMapper createExpenseMapper
+        -UpdateExpenseRequestMapper updateExpenseMapper
+        -ExpenseResponseMapper expenseResponseMapper
+
+        +void CreateExpense(CreateExpenseRequest request)
+        +List<ExpenseResponse> GetExpenses(DateTime? startDate, DateTime? endDate, string? category)
+        +ExpenseResponse GetExpenseById(Guid id)
+        +void UpdateExpense(Guid id, UpdateExpenseRequest request)
+        +void DeleteExpense(Guid id)
+    }
+
+    class IncomeController {
+        -IncomeService incomeService
+        -CreateIncomeRequestMapper createIncomeMapper
+        -UpdateIncomeRequestMapper updateIncomeMapper
+        -IncomeResponseMapper incomeResponseMapper
+
+        +void CreateIncome(CreateIncomeRequest request)
+        +List<IncomeResponse> GetIncomes()
+        +IncomeResponse GetIncomeById(Guid id)
+        +void UpdateIncome(Guid id, UpdateIncomeRequest request)
+        +void DeleteIncome(Guid id)
+    }
+
+    class BudgetController {
+        -BudgetService budgetService
+        -CreateBudgetRequestMapper createBudgetMapper
+        -BudgetResponseMapper budgetResponseMapper
+
+        +void AddBudget(CreateBudgetRequest request)
+        +BudgetResponse GetCurrentBudget()
+        +BudgetResponse GetBudgetByMonth(string month)
+    }
+
+    class SummaryController {
+        -ExpenseService expenseService
+        -IncomeService incomeService
+        
+        +MonthlySummaryResponse GetMonthlySummary()
+    }
+
+    class GoalController {
+        -GoalService goalService
+        -CreateGoalRequestMapper createGoalMapper
+        -GoalResponseMapper goalResponseMapper
+
+        +void CreateGoal(CreateGoalRequest request)
+        +List<GoalResponse> GetGoals()
+    }
+    
+    AuthController --> AuthenticationService
+    AuthController --> UserManagementService
+    AuthController --> CreateUserRequestMapper
+    AuthController --> UserResponseMapper
+
+    UserController --> UserManagementService
+    UserController --> UpdateUserRequestMapper
+    UserController --> UserResponseMapper
+
+    ExpenseController --> ExpenseService
+    ExpenseController --> CreateExpenseRequestMapper
+    ExpenseController --> UpdateExpenseRequestMapper
+    ExpenseController --> ExpenseResponseMapper
+
+    IncomeController --> IncomeService
+    IncomeController --> CreateIncomeRequestMapper
+    IncomeController --> UpdateIncomeRequestMapper
+    IncomeController --> IncomeResponseMapper
+
+    BudgetController --> BudgetService
+    BudgetController --> CreateBudgetRequestMapper
+    BudgetController --> BudgetResponseMapper
+
+    SummaryController --> ExpenseService
+    SummaryController --> IncomeService
+
+    GoalController --> GoalService
+    GoalController --> CreateGoalRequestMapper
+    GoalController --> GoalResponseMapper
+
+}
+
 
 @enduml
