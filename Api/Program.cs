@@ -2,6 +2,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                       "Host=localhost;Database=expense_tracker_group_5_postgres;Username=user;Password=password";
+
+builder.Services.AddSingleton(new BaseContext(connectionString));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -15,6 +21,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapGet("/users", (BaseContext baseContext) =>
+{
+    var users = baseContext.GetAllUsers();
+    return Results.Ok(users);
+})
+.WithName("GetAllUsers");
 
 var summaries = new[]
 {

@@ -1,33 +1,40 @@
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Data;
+using Dapper;
+using Npgsql;
 
-public class BaseContext : DbContext
+public class BaseContext
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Expense> Expenses { get; set; }
-    public DbSet<Income> Incomes { get; set; }
-    public DbSet<Budget> Budgets { get; set; }
-    public DbSet<Goal> Goals { get; set; }
+    private readonly IDbConnection _connection;
 
-    public BaseContext(DbContextOptions<BaseContext> options)
-        : base(options)
+    public BaseContext(string connectionString)
     {
+        _connection = new NpgsqlConnection(connectionString);
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public IDbConnection Connection => _connection;
+
+    public void OpenConnection()
     {
-        base.OnModelCreating(modelBuilder);
+        if (_connection.State == ConnectionState.Closed)
+        {
+            _connection.Open();
+        }
+    }
 
-        // Agregar configuraciones adicionales para cada entidad
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
+    public void CloseConnection()
+    {
+        if (_connection.State == ConnectionState.Open)
+        {
+            _connection.Close();
+        }
+    }
 
-        // Configurar tipos de columna para decimal
-        modelBuilder.Entity<Expense>().Property(e => e.Amount).HasColumnType("decimal(18,2)");
-        modelBuilder.Entity<Income>().Property(i => i.Amount).HasColumnType("decimal(18,2)");
-        modelBuilder.Entity<Budget>().Property(b => b.Amount).HasColumnType("decimal(18,2)");
-        modelBuilder.Entity<Budget>().Property(b => b.CurrentAmount).HasColumnType("decimal(18,2)");
-        modelBuilder.Entity<Goal>().Property(g => g.GoalAmount).HasColumnType("decimal(18,2)");
-        modelBuilder.Entity<Goal>().Property(g => g.CurrentAmount).HasColumnType("decimal(18,2)");
+    public IEnumerable<User> GetAllUsers()
+    {
+        OpenConnection();
+        var users = _connection.Query<User>("SELECT * FROM Users");
+        CloseConnection();
+        return users;
     }
 }
