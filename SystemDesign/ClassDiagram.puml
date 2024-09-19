@@ -22,7 +22,9 @@ package "DOMAIN LAYER" {
             +string Category
             +DateTime Date
             +DateTime CreatedAt
-            +boolean IsRecurrent
+        }
+
+        class RecurrentExpense extends Expense {
             +DateTime LastCalculation
         }
 
@@ -84,7 +86,6 @@ package "DOMAIN LAYER" {
                 +string Category
                 +DateTime Date
                 +string Currency
-                +boolean IsRecurrent
             }
 
             class UpdateExpenseRequest {
@@ -93,7 +94,6 @@ package "DOMAIN LAYER" {
                 +string Category
                 +DateTime Date
                 +string Currency
-                +boolean IsRecurrent
             }
 
             class ExpenseResponse {
@@ -103,7 +103,34 @@ package "DOMAIN LAYER" {
                 +string Category
                 +DateTime Date
                 +DateTime CreatedAt
-                +boolean IsRecurrent
+                +string Currency
+            }
+        }
+
+        package "Recurrent Expense DTOs" {
+            class CreateRecurrentExpenseRequest {
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +string Currency
+            }
+
+            class UpdateRecurrentExpenseRequest {
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +string Currency
+            }
+
+            class RecurrentExpenseResponse {
+                +Guid Id
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +DateTime CreatedAt
                 +string Currency
             }
         }
@@ -215,8 +242,11 @@ package "DOMAIN LAYER" {
             +List<Expense> GetRecurrentExpenses()
         }
 
+        interface IRecurrentExpenseRepository extends IRepository<RecurrentExpense> {
+            +List<RecurrentExpense> GetActiveRecurrentExpenses()
+        }
+
         interface IIncomeRepository extends IRepository<Income> {
-            +List<Income> GetByDateRange(DateTime startDate, DateTime endDate)
             +List<Income> GetBySource(string source)
         }
 
@@ -426,7 +456,6 @@ package "APLICATION LAYER" {
             +void DeleteIncome(Guid incomeId)
             +Income GetIncomeById(Guid incomeId)
             +List<Income> GetIncomesBySource(string source)
-            +List<Income> GetIncomesByDateRange(DateTime start, DateTime end)
         }
 
         class BudgetService {
@@ -452,13 +481,13 @@ package "APLICATION LAYER" {
             +List<Goal> FilterByAmountRange(decimal minGoal, decimal maxGoal)
         }
 
-        class RecurringExpenseService {
-            -IExpenseRepository expenseRepository
+        class RecurrentExpenseService {
+            -IRecurrentExpenseRepository expenseRepository
 
-            +void AddRecurringExpense(Expense expense)
-            +void UpdateRecurringExpense(Expense expense)
-            +void DeleteRecurringExpense(Guid expenseId)
-            +void CalculateRecurringExpense()
+            +void AddRecurrentExpense(RecurrentExpense expense)
+            +void UpdateRecurrentExpense(RecurrentExpense expense)
+            +void DeleteRecurrentExpense(Guid expenseId)
+            +void CalculateRecurrentExpenseMonthly()
         }
 
         BudgetService *-- IBudgetRepository
@@ -467,7 +496,7 @@ package "APLICATION LAYER" {
         GoalService *-- IGoalRepository
         GoalService *-- IUserNotifier
 
-        RecurringExpenseService *-- IExpenseRepository
+        RecurrentExpenseService *-- IRecurrentExpenseRepository
 
         ExpenseService *-- IExpenseRepository
         IncomeService *-- IIncomeRepository
