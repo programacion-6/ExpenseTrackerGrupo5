@@ -8,7 +8,7 @@ Take control of your finances.
 docker-compose up -d
 ```
 
-### Crear y aplicar migraciones
+### Create and apply migrations
 ```bash
 dotnet ef migrations add InitialCreate
 dotnet ef database update
