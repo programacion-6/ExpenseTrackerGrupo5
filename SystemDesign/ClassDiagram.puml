@@ -57,6 +57,8 @@ package "DOMAIN LAYER" {
     }
 
     package "Validators" {
+        interface AbstractValidator
+        note left: external library interface
 
         class UserValidator implements AbstractValidator<User> {
             +UserValidator()
@@ -315,12 +317,6 @@ package "DOMAIN LAYER" {
         }
     }
 
-    package "Mappers" {
-        interface IMapper<TSource, TDestination> {
-            +TDestination Map(TSource source)
-        }
-    }
-
     package "Services" {
         interface IAuthenticationService {
             +void Register(string name, string email, string password)
@@ -380,6 +376,15 @@ package "DOMAIN LAYER" {
 }
 
 package "APLICATION LAYER" {
+    package "DTOs" {
+        class Profile
+        note left: external library class
+
+        class MappingProfile extends Profile {
+            +MappingProfile()
+        }
+    }
+
     package "Repositories" {
         class UserRepository {
         }
@@ -421,121 +426,6 @@ package "APLICATION LAYER" {
         EmailNotificator ..|> IUserNotifier
         TokenHandler ..|> ITokenHandler
         Encryptor ..|> IEncryptor
-    }
-
-    package "Mappers" {
-
-        package "User Mappers" {
-            class CreateUserRequestMapper {
-                +User Map(CreateUserRequest dto)
-            }
-
-            class UpdateUserRequestMapper {
-                +User Map(UpdateUserRequest dto)
-            }
-
-            class UserResponseMapper {
-                +UserResponse Map(User entity)
-            }
-
-            class AuthResponseMapper {
-                +AuthResponse Map(AuthData data)
-            }
-        }
-
-        CreateUserRequestMapper ..|> IMapper
-        UserResponseMapper ..|> IMapper
-        UpdateUserRequestMapper ..|> IMapper
-        AuthResponse ..|> IMapper
-
-        package "Expense Mappers" {
-            class CreateExpenseRequestMapper {
-                +Expense Map(CreateExpenseRequest dto)
-            }
-
-            class UpdateExpenseRequestMapper {
-                +Expense Map(UpdateExpenseRequest dto)
-            }
-
-            class ExpenseResponseMapper {
-                +ExpenseResponse Map(Expense entity)
-            }
-
-            CreateExpenseRequestMapper ..|> IMapper
-            UpdateExpenseRequestMapper ..|> IMapper
-            ExpenseResponseMapper ..|> IMapper
-        }
-
-        package "Recurrent Expense Mappers" {
-            class CreateRecurrentExpenseRequestMapper {
-                +RecurrentExpense Map(CreateRecurrentExpenseRequest dto)
-            }
-
-            class UpdateRecurrentExpenseRequestMapper {
-                +RecurrentExpense Map(UpdateRecurrentExpenseRequest dto)
-            }
-
-            class RecurrentExpenseResponseMapper {
-                +RecurrentExpenseResponse Map(RecurrentExpense entity)
-            }
-
-            CreateRecurrentExpenseRequestMapper ..|> IMapper
-            UpdateRecurrentExpenseRequestMapper ..|> IMapper
-            RecurrentExpenseResponseMapper ..|> IMapper
-        }
-
-        package "Income Mappers" {
-            class CreateIncomeRequestMapper {
-                +Income Map(CreateIncomeRequest dto)
-            }
-
-            class UpdateIncomeRequestMapper {
-                +Income Map(UpdateIncomeRequest dto)
-            }
-
-            class IncomeResponseMapper {
-                +IncomeResponse Map(Income entity)
-            }
-
-            CreateIncomeRequestMapper ..|> IMapper
-            UpdateIncomeRequestMapper ..|> IMapper
-            IncomeResponseMapper ..|> IMapper
-        }
-
-        package "Budget Mappers" {
-            class CreateBudgetRequestMapper {
-                +Budget Map(CreateBudgetRequest dto)
-            }
-
-            class UpdateBudgetRequestMapper {
-                +Budget Map(UpdateBudgetRequest dto)
-            }
-
-            class BudgetResponseMapper {
-                +BudgetResponse Map(Budget entity)
-            }
-            CreateBudgetRequestMapper ..|> IMapper
-            UpdateBudgetRequestMapper ..|> IMapper
-            BudgetResponseMapper ..|> IMapper
-        }
-
-        package "Goal Mappers" {
-            class CreateGoalRequestMapper {
-                +Goal Map(CreateGoalRequest dto)
-            }
-
-            class UpdateGoalRequestMapper {
-                +Goal Map(UpdateGoalRequest dto)
-            }
-
-            class GoalResponseMapper {
-                +GoalResponse Map(Goal entity)
-            }
-
-            CreateGoalRequestMapper ..|> IMapper
-            UpdateGoalRequestMapper ..|> IMapper
-            GoalResponseMapper ..|> IMapper
-        }
     }
 
     package "Services" {
@@ -617,6 +507,9 @@ package "APLICATION LAYER" {
 
 package "PRESENTATION LAYER" {
 
+    interface IMapper
+    note left: external library interface
+
     class AuthenticationController {
         -IAuthenticationService authService
         -IMapper<CreateUserRequest, User> userMapperFromRequest
@@ -694,7 +587,7 @@ package "PRESENTATION LAYER" {
 
         +void AddGoal(CreateGoalRequest dto)
         +void UpdateGoal(UpdateGoalRequest dto)
-        +void DeleteGoal(Guid userId, Guid goalId)
+        +void DeleteGoal(Guid goalId)
         +List<GoalResponse> GetActiveGoals(Guid userId)
     }
 
