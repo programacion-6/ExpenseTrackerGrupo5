@@ -56,42 +56,6 @@ package "DOMAIN LAYER" {
 
     }
 
-    package "Validators" {
-        interface AbstractValidator
-        note left: external library interface
-
-        class UserValidator implements AbstractValidator<User> {
-            +UserValidator()
-        }
-
-        class ExpenseValidator implements AbstractValidator<Expense> {
-            +ExpenseValidator()
-        }
-
-        class RecurrentExpenseValidator implements AbstractValidator<RecurrentExpense> {
-            +RecurrentExpenseValidator()
-        }
-
-        class IncomeValidator implements AbstractValidator<Income> {
-            +IncomeValidator()
-        }
-
-        class BudgetValidator implements AbstractValidator<Budget> {
-            +BudgetValidator()
-        }
-
-        class GoalValidator implements AbstractValidator<Goal> {
-            +GoalValidator()
-        }
-
-        UserValidator *-- User
-        ExpenseValidator *-- Expense
-        RecurrentExpenseValidator *-- RecurrentExpense
-        IncomeValidator *-- Income
-        BudgetValidator *-- Budget
-        GoalValidator *-- Goal
-    }
-
     package "DTOs" {
 
         package "User DTOs" {
@@ -383,6 +347,42 @@ package "APLICATION LAYER" {
         class MappingProfile extends Profile {
             +MappingProfile()
         }
+    }
+
+    package "Validators" {
+        interface AbstractValidator
+        note left: external library interface
+
+        class UserValidator implements AbstractValidator<User> {
+            +UserValidator()
+        }
+
+        class ExpenseValidator implements AbstractValidator<Expense> {
+            +ExpenseValidator()
+        }
+
+        class RecurrentExpenseValidator implements AbstractValidator<RecurrentExpense> {
+            +RecurrentExpenseValidator()
+        }
+
+        class IncomeValidator implements AbstractValidator<Income> {
+            +IncomeValidator()
+        }
+
+        class BudgetValidator implements AbstractValidator<Budget> {
+            +BudgetValidator()
+        }
+
+        class GoalValidator implements AbstractValidator<Goal> {
+            +GoalValidator()
+        }
+
+        UserValidator *-- User
+        ExpenseValidator *-- Expense
+        RecurrentExpenseValidator *-- RecurrentExpense
+        IncomeValidator *-- Income
+        BudgetValidator *-- Budget
+        GoalValidator *-- Goal
     }
 
     package "Repositories" {
