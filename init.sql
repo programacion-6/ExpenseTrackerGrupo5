@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     description VARCHAR NOT NULL,
     category VARCHAR NOT NULL,
     date DATE NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS recurrentExpense (
@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS recurrentExpense (
     category VARCHAR NOT NULL,
     date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_recurrent BOOLEAN NOT NULL,
     last_calculation TIMESTAMP NOT NULL
 );
 
