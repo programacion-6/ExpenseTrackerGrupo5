@@ -518,6 +518,9 @@ package "PRESENTATION LAYER" {
         +AuthResponse Login(string email, string password)
     }
 
+    AuthenticationController *-- IAuthenticationService
+    AuthenticationController *-- IMapper
+
     class UserController {
         -IUserManagementService userService
         -IMapper<UpdateUserRequest, User> userMapperFromUpdateRequest
@@ -527,6 +530,9 @@ package "PRESENTATION LAYER" {
         +void ResetPassword(string email, string newPassword)
     }
 
+    UserController *-- IUserManagementService
+    UserController *-- IMapper
+
     class ExpenseController {
         -IExpenseService expenseService
         -IMapper<CreateExpenseRequest, Expense> expenseMapperFromCreateRequest
@@ -535,11 +541,14 @@ package "PRESENTATION LAYER" {
 
         +void AddExpense(CreateExpenseRequest dto)
         +void UpdateExpense(UpdateExpenseRequest dto)
-        +void DeleteExpense(Guid userId, Guid expenseId)
-        +ExpenseResponse GetExpenseById(Guid userId, Guid expenseId)
-        +List<ExpenseResponse> GetExpensesByCategory(Guid userId, string category)
-        +List<ExpenseResponse> GetExpensesByDateRange(Guid userId, DateTime start, DateTime end)
+        +void DeleteExpense(Guid expenseId)
+        +ExpenseResponse GetExpenseById(Guid expenseId)
+        +List<ExpenseResponse> GetExpensesByCategory(string category)
+        +List<ExpenseResponse> GetExpensesByDateRange(DateTime start, DateTime end)
     }
+
+    ExpenseController *-- IExpenseService
+    ExpenseController *-- IMapper
 
     class RecurrentExpenseController {
         -IRecurrentExpenseService recurrentExpenseService
@@ -549,9 +558,12 @@ package "PRESENTATION LAYER" {
 
         +void AddRecurrentExpense(CreateRecurrentExpenseRequest dto)
         +void UpdateRecurrentExpense(UpdateRecurrentExpenseRequest dto)
-        +void DeleteRecurrentExpense(Guid userId, Guid expenseId)
-        +void CalculateRecurrentExpenses(Guid userId)
+        +void DeleteRecurrentExpense(Guid expenseId)
+        +void CalculateRecurrentExpenses()
     }
+
+    RecurrentExpenseController *-- IRecurrentExpenseService
+    RecurrentExpenseController *-- IMapper
 
     class IncomeController {
         -IIncomeService incomeService
@@ -561,10 +573,13 @@ package "PRESENTATION LAYER" {
 
         +void AddIncome(CreateIncomeRequest dto)
         +void UpdateIncome(UpdateIncomeRequest dto)
-        +void DeleteIncome(Guid userId, Guid incomeId)
-        +IncomeResponse GetIncomeById(Guid userId, Guid incomeId)
-        +List<IncomeResponse> GetIncomesBySource(Guid userId, string source)
+        +void DeleteIncome(Guid incomeId)
+        +IncomeResponse GetIncomeById(Guid incomeId)
+        +List<IncomeResponse> GetIncomesBySource(string source)
     }
+
+    IncomeController *-- IIncomeService
+    IncomeController *-- IMapper
 
     class BudgetController {
         -IBudgetService budgetService
@@ -574,10 +589,13 @@ package "PRESENTATION LAYER" {
 
         +void AddBudget(CreateBudgetRequest dto)
         +void UpdateBudget(UpdateBudgetRequest dto)
-        +void DeleteBudget(Guid userId, Guid budgetId)
-        +BudgetResponse GetCurrentBudget(Guid userId)
-        +BudgetResponse GetBudgetByMonth(Guid userId, DateTime month)
+        +void DeleteBudget(Guid budgetId)
+        +BudgetResponse GetCurrentBudget()
+        +BudgetResponse GetBudgetByMonth(DateTime month)
     }
+
+    BudgetController *-- IBudgetService
+    BudgetController *-- IMapper
 
     class GoalController {
         -IGoalService goalService
@@ -587,36 +605,18 @@ package "PRESENTATION LAYER" {
 
         +void AddGoal(CreateGoalRequest dto)
         +void UpdateGoal(UpdateGoalRequest dto)
-        +void DeleteGoal(Guid goalId)
-        +List<GoalResponse> GetActiveGoals(Guid userId)
+        +void DeleteGoal()
+        +List<GoalResponse> GetActiveGoals()
     }
-
-    class ReportController {
-        -IReportService reportService
-        +MonthlySummary GetMonthlySummary(Guid userId)
-        +ExpenseInsightsResponse GetExpenseInsights(Guid userId)
-    }
-
-    AuthenticationController *-- IAuthenticationService
-    AuthenticationController *-- IMapper
-
-    UserController *-- IUserManagementService
-    UserController *-- IMapper
-
-    ExpenseController *-- IExpenseService
-    ExpenseController *-- IMapper
-
-    RecurrentExpenseController *-- IRecurrentExpenseService
-    RecurrentExpenseController *-- IMapper
-
-    IncomeController *-- IIncomeService
-    IncomeController *-- IMapper
-
-    BudgetController *-- IBudgetService
-    BudgetController *-- IMapper
 
     GoalController *-- IGoalService
     GoalController *-- IMapper
+
+    class ReportController {
+        -IReportService reportService
+        +MonthlySummary GetMonthlySummary()
+        +ExpenseInsightsResponse GetExpenseInsights()
+    }
 
     ReportController *-- IReportService
 }
