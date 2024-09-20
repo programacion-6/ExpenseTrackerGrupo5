@@ -245,26 +245,24 @@ package "DOMAIN LAYER" {
         }
 
         interface IExpenseRepository extends IRepository<Expense> {
-            +List<Expense> GetByDateRange(DateTime startDate, DateTime endDate)
-            +List<Expense> GetByCategory(string category)
+            +List<Expense> GetUserExpenseByDateRange(Guid userId, DateTime startDate, DateTime endDate)
+            +List<Expense> GetUserExpenseByCategory(Guid userId, string category)
         }
 
         interface IRecurrentExpenseRepository extends IRepository<RecurrentExpense> {
-            +List<RecurrentExpense> GetActiveRecurrentExpenses()
+            +List<RecurrentExpense> GetUserRecurrentExpensesByMonth(Guid userId, DateTime month)
         }
 
         interface IIncomeRepository extends IRepository<Income> {
-            +List<Income> GetBySource(string source)
+            +List<Income> GetUserIncomeBySource(Guid userId, string source)
         }
 
         interface IBudgetRepository extends IRepository<Budget> {
-            +Budget GetCurrentBudget()
-            +Budget GetByMonth(DateTime month)
+            +Budget GetUserBudgetByMonth(Guid userId, DateTime month)
         }
 
         interface IGoalRepository extends IRepository<Goal> {
-            +List<Goal> GetActiveGoals()
-            +List<Goal> GetByGoalAmountRange(decimal minGoal, decimal maxGoal)
+            +List<Goal> GetActiveUserGoals(Guid userId)
         }
     }
 
@@ -286,6 +284,62 @@ package "DOMAIN LAYER" {
     package "Mappers" {
         interface IMapper<TSource, TDestination> {
             +TDestination Map(TSource source)
+        }
+    }
+
+    package "Services" {
+        interface IAuthenticationService {
+            +void Register(string name, string email, string password)
+            +string Login(string email, string password)
+        }
+
+        interface IUserManagementService {
+            +void ResetPassword(string email, string newPassword)
+            +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
+        }
+
+        interface IExpenseService {
+            +void AddUserExpense(Expense expense)
+            +void UpdateUserExpense(Expense expense)
+            +void DeleteUserExpense(Guid userId, Guid expenseId)
+            +Expense GetUserExpenseById(Guid userId, Guid expenseId)
+            +List<Expense> GetUserExpensesByCategory(Guid userId, string category)
+            +List<Expense> GetUserExpensesByDateRange(Guid userId, DateTime start, DateTime end)
+        }
+
+        interface IRecurrentExpenseService {
+            +void AddUserRecurrentExpense(RecurrentExpense expense)
+            +void UpdateUserRecurrentExpense(RecurrentExpense expense)
+            +void DeleteUserRecurrentExpense(Guid userId, Guid expenseId)
+            +void CalculateUserRecurrentExpenseMonthly(Guid userId)
+        }
+
+        interface IIncomeService {
+            +void AddUserIncome(Income income)
+            +void UpdateUserIncome(Income income)
+            +void DeleteUserIncome(Guid userId, Guid incomeId)
+            +Income GetUserIncomeById(Guid userId, Guid incomeId)
+            +List<Income> GetUserIncomesBySource(Guid userId, string source)
+        }
+
+        interface IBudgetService {
+            +void AddUserBudget(Budget budget)
+            +void UpdateUserBudget(Budget budget)
+            +void DeleteCurrentUserBudget(Guid userId, Guid budgetId)
+            +Budget GetCurrentUserBudget(Guid userId)
+            +Budget GetUserBudgetByMonth(Guid userId, DateTime month)
+        }
+
+        interface IGoalService {
+            +void AddUserGoal(Goal goal)
+            +void UpdateUserGoal(Goal goal)
+            +void DeleteUserGoal(Guid userId, Guid goalId)
+            +void GetActiveUserGoals(Guid userId)
+        }
+
+        interface IReportService {
+            +MonthlySummaryResponse GetUserMonthlySummary(Guid userId)
+            +ExpenseInsightsResponse GetUserExpenseInsightsResponse(Guid userId)
         }
     }
 
@@ -451,93 +505,75 @@ package "APLICATION LAYER" {
             -IUserRepository userRepository
             -ITokenHandler tokenHandler
             -IEncryptor encryptor
-
-            +void Register(string name, string email, string password)
-            +string Login(string email, string password)
         }
+
+        AuthenticationService ..|> IAuthenticationService
+        AuthenticationService *-- IUserRepository
+        AuthenticationService *-- ITokenHandler
+        AuthenticationService *-- IEncryptor
 
         class UserManagementService {
             -IUserRepository userRepository
             -ITokenHandler tokenHandler
             -IEncryptor encryptor
             -IUserNotifier userNotifier
-
-            +void ResetPassword(string email, string newPassword)
-            +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
         }
 
-        class ExpenseService {
-            -IExpenseRepository expenseRepository
-
-            +void AddExpense(Expense expense)
-            +void UpdateExpense(Expense expense)
-            +void DeleteExpense(Guid expenseId)
-            +Expense GetExpenseById(Guid expenseId)
-            +List<Expense> GetExpensesByCategory(string category)
-            +List<Expense> GetExpensesByDateRange(DateTime start, DateTime end)
-        }
-
-        class RecurrentExpenseService {
-            -IRecurrentExpenseRepository expenseRepository
-
-            +void AddRecurrentExpense(RecurrentExpense expense)
-            +void UpdateRecurrentExpense(RecurrentExpense expense)
-            +void DeleteRecurrentExpense(Guid expenseId)
-            +void CalculateRecurrentExpenseMonthly()
-        }
-
-        class IncomeService {
-            -IIncomeRepository incomeRepository
-
-            +void AddIncome(Income income)
-            +void UpdateIncome(Income income)
-            +void DeleteIncome(Guid incomeId)
-            +Income GetIncomeById(Guid incomeId)
-            +List<Income> GetIncomesBySource(string source)
-        }
-
-        class BudgetService {
-            -IBudgetRepository budgetRepository
-            -IUserNotifier userNotificator
-
-            +void AddBudget(Budget budget)
-            +void UpdateBudget(Budget budget)
-            +void DeleteBudget(Guid budgetId)
-            +Budget GetCurrentBudget()
-            +Budget GetByMonth(DateTime month)
-            +List<Budget> FilterByAmountRange(decimal minAmount, decimal maxAmount)
-        }
-
-        class GoalService {
-            -IGoalRepository goalRepository
-            -IUserNotifier userNotificator
-
-            +void AddGoal(Goal goal)
-            +void UpdateGoal(Goal goal)
-            +void DeleteGoal(Guid goalId)
-            +void GetCurrentGoals()
-            +List<Goal> FilterByAmountRange(decimal minGoal, decimal maxGoal)
-        }
-
-        BudgetService *-- IBudgetRepository
-        BudgetService *-- IUserNotifier
-
-        GoalService *-- IGoalRepository
-        GoalService *-- IUserNotifier
-
-        RecurrentExpenseService *-- IRecurrentExpenseRepository
-
-        ExpenseService *-- IExpenseRepository
-        IncomeService *-- IIncomeRepository
-
-        AuthenticationService *-- IUserRepository
-        AuthenticationService *-- ITokenHandler
-        AuthenticationService *-- IEncryptor
-
+        UserManagementService ..|> IUserManagementService
         UserManagementService *-- IUserRepository
         UserManagementService *-- ITokenHandler
         UserManagementService *-- IEncryptor
         UserManagementService *-- IUserNotifier
+
+        class ExpenseService {
+            -IExpenseRepository expenseRepository
+        }
+
+        ExpenseService ..|> IExpenseService
+        ExpenseService *-- IExpenseRepository
+
+        class RecurrentExpenseService {
+            -IRecurrentExpenseRepository expenseRepository
+        }
+
+        RecurrentExpenseService ..|> IRecurrentExpenseService
+        RecurrentExpenseService *-- IRecurrentExpenseRepository
+
+        class IncomeService {
+            -IIncomeRepository incomeRepository
+        }
+
+        IncomeService ..|> IIncomeService
+        IncomeService *-- IIncomeRepository
+
+        class BudgetService {
+            -IBudgetRepository budgetRepository
+            -IUserNotifier userNotificator
+        }
+
+        BudgetService ..|> IBudgetService
+        BudgetService *-- IBudgetRepository
+        BudgetService *-- IUserNotifier
+
+        class GoalService {
+            -IGoalRepository goalRepository
+            -IUserNotifier userNotificator
+        }
+
+        GoalService ..|> IGoalService
+        GoalService *-- IGoalRepository
+        GoalService *-- IUserNotifier
+
+        class ReportService {
+            -IExpenseRepository expenseRepository
+            -IRecurrentExpenseRepository recurrentExpenseRepository
+            -IBudgetRepository budgetRepository
+        }
+
+        ReportService ..|> IReportService
+        ReportService *-- IExpenseRepository
+        ReportService *-- IRecurrentExpenseRepository
+        ReportService *-- IBudgetRepository
     }
 }
 
