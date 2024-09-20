@@ -353,6 +353,9 @@ package "APLICATION LAYER" {
         class ExpenseRepository {
         }
 
+        class RecurrentExpenseRepository {
+        }
+
         class IncomeRepository {
         }
 
@@ -364,6 +367,7 @@ package "APLICATION LAYER" {
 
         UserRepository ..|> IUserRepository
         ExpenseRepository ..|> IExpenseRepository
+        RecurrentExpenseRepository ..|> IRecurrentExpenseRepository
         IncomeRepository ..|> IIncomeRepository
         BudgetRepository ..|> IBudgetRepository
         GoalRepository ..|> IGoalRepository
@@ -579,109 +583,115 @@ package "APLICATION LAYER" {
 
 package "PRESENTATION LAYER" {
 
-    class AuthController {
-        -AuthenticationService authService
-        -UserManagementService userManagementService
-        -CreateUserRequestMapper createUserMapper
-        -UserResponseMapper userResponseMapper
+    class AuthenticationController {
+        -IAuthenticationService authService
+        -IMapper<CreateUserRequest, User> userMapperFromRequest
 
-        +string Register(CreateUserRequest request)
-        +string Login(string email, string password)
-        +void ResetPassword(string email)
-        +void VerifyPasswordReset(string code, string email, string password)
+        +void Register(CreateUserRequest dto)
+        +AuthResponse Login(string email, string password)
     }
 
     class UserController {
-        -UserManagementService userManagementService
-        -UpdateUserRequestMapper updateUserMapper
-        -UserResponseMapper userResponseMapper
+        -IUserManagementService userService
+        -IMapper<UpdateUserRequest, User> userMapperFromUpdateRequest
+        -IMapper<User, UserResponse> userMapperToResponse
 
-        +void UpdateProfile(UpdateUserRequest request)
+        +void UpdateProfile(UpdateUserRequest dto)
+        +void ResetPassword(string email, string newPassword)
     }
 
     class ExpenseController {
-        -ExpenseService expenseService
-        -CreateExpenseRequestMapper createExpenseMapper
-        -UpdateExpenseRequestMapper updateExpenseMapper
-        -ExpenseResponseMapper expenseResponseMapper
+        -IExpenseService expenseService
+        -IMapper<CreateExpenseRequest, Expense> expenseMapperFromCreateRequest
+        -IMapper<UpdateExpenseRequest, Expense> expenseMapperFromUpdateRequest
+        -IMapper<Expense, ExpenseResponse> expenseMapperToResponse
 
-        +void CreateExpense(CreateExpenseRequest request)
-        +List<ExpenseResponse> GetExpenses(DateTime? startDate, DateTime? endDate, string? category)
-        +ExpenseResponse GetExpenseById(Guid id)
-        +void UpdateExpense(Guid id, UpdateExpenseRequest request)
-        +void DeleteExpense(Guid id)
+        +void AddExpense(CreateExpenseRequest dto)
+        +void UpdateExpense(UpdateExpenseRequest dto)
+        +void DeleteExpense(Guid userId, Guid expenseId)
+        +ExpenseResponse GetExpenseById(Guid userId, Guid expenseId)
+        +List<ExpenseResponse> GetExpensesByCategory(Guid userId, string category)
+        +List<ExpenseResponse> GetExpensesByDateRange(Guid userId, DateTime start, DateTime end)
+    }
+
+    class RecurrentExpenseController {
+        -IRecurrentExpenseService recurrentExpenseService
+        -IMapper<CreateRecurrentExpenseRequest, RecurrentExpense> recurrentExpenseMapperFromCreateRequest
+        -IMapper<UpdateRecurrentExpenseRequest, RecurrentExpense> recurrentExpenseMapperFromUpdateRequest
+        -IMapper<RecurrentExpense, RecurrentExpenseResponse> recurrentExpenseMapperToResponse
+
+        +void AddRecurrentExpense(CreateRecurrentExpenseRequest dto)
+        +void UpdateRecurrentExpense(UpdateRecurrentExpenseRequest dto)
+        +void DeleteRecurrentExpense(Guid userId, Guid expenseId)
+        +void CalculateRecurrentExpenses(Guid userId)
     }
 
     class IncomeController {
-        -IncomeService incomeService
-        -CreateIncomeRequestMapper createIncomeMapper
-        -UpdateIncomeRequestMapper updateIncomeMapper
-        -IncomeResponseMapper incomeResponseMapper
+        -IIncomeService incomeService
+        -IMapper<CreateIncomeRequest, Income> incomeMapperFromCreateRequest
+        -IMapper<UpdateIncomeRequest, Income> incomeMapperFromUpdateRequest
+        -IMapper<Income, IncomeResponse> incomeMapperToResponse
 
-        +void CreateIncome(CreateIncomeRequest request)
-        +List<IncomeResponse> GetIncomes()
-        +IncomeResponse GetIncomeById(Guid id)
-        +void UpdateIncome(Guid id, UpdateIncomeRequest request)
-        +void DeleteIncome(Guid id)
+        +void AddIncome(CreateIncomeRequest dto)
+        +void UpdateIncome(UpdateIncomeRequest dto)
+        +void DeleteIncome(Guid userId, Guid incomeId)
+        +IncomeResponse GetIncomeById(Guid userId, Guid incomeId)
+        +List<IncomeResponse> GetIncomesBySource(Guid userId, string source)
     }
 
     class BudgetController {
-        -BudgetService budgetService
-        -CreateBudgetRequestMapper createBudgetMapper
-        -BudgetResponseMapper budgetResponseMapper
+        -IBudgetService budgetService
+        -IMapper<CreateBudgetRequest, Budget> budgetMapperFromCreateRequest
+        -IMapper<UpdateBudgetRequest, Budget> budgetMapperFromUpdateRequest
+        -IMapper<Budget, BudgetResponse> budgetMapperToResponse
 
-        +void AddBudget(CreateBudgetRequest request)
-        +BudgetResponse GetCurrentBudget()
-        +BudgetResponse GetBudgetByMonth(string month)
-    }
-
-    class SummaryController {
-        -ExpenseService expenseService
-        -IncomeService incomeService
-
-        +MonthlySummaryResponse GetMonthlySummary()
-        +ExpenseInsightsResponse GetExpenseInsightsResponse()
+        +void AddBudget(CreateBudgetRequest dto)
+        +void UpdateBudget(UpdateBudgetRequest dto)
+        +void DeleteBudget(Guid userId, Guid budgetId)
+        +BudgetResponse GetCurrentBudget(Guid userId)
+        +BudgetResponse GetBudgetByMonth(Guid userId, DateTime month)
     }
 
     class GoalController {
-        -GoalService goalService
-        -CreateGoalRequestMapper createGoalMapper
-        -GoalResponseMapper goalResponseMapper
+        -IGoalService goalService
+        -IMapper<CreateGoalRequest, Goal> goalMapperFromCreateRequest
+        -IMapper<UpdateGoalRequest, Goal> goalMapperFromUpdateRequest
+        -IMapper<Goal, GoalResponse> goalMapperToResponse
 
-        +void CreateGoal(CreateGoalRequest request)
-        +List<GoalResponse> GetGoals()
+        +void AddGoal(CreateGoalRequest dto)
+        +void UpdateGoal(UpdateGoalRequest dto)
+        +void DeleteGoal(Guid userId, Guid goalId)
+        +List<GoalResponse> GetActiveGoals(Guid userId)
     }
 
-    AuthController --> AuthenticationService
-    AuthController --> UserManagementService
-    AuthController --> CreateUserRequestMapper
-    AuthController --> UserResponseMapper
+    class ReportController {
+        -IReportService reportService
+        +MonthlySummary GetMonthlySummary(Guid userId)
+        +ExpenseInsightsResponse GetExpenseInsights(Guid userId)
+    }
 
-    UserController --> UserManagementService
-    UserController --> UpdateUserRequestMapper
-    UserController --> UserResponseMapper
+    AuthenticationController *-- IAuthenticationService
+    AuthenticationController *-- IMapper
 
-    ExpenseController --> ExpenseService
-    ExpenseController --> CreateExpenseRequestMapper
-    ExpenseController --> UpdateExpenseRequestMapper
-    ExpenseController --> ExpenseResponseMapper
+    UserController *-- IUserManagementService
+    UserController *-- IMapper
 
-    IncomeController --> IncomeService
-    IncomeController --> CreateIncomeRequestMapper
-    IncomeController --> UpdateIncomeRequestMapper
-    IncomeController --> IncomeResponseMapper
+    ExpenseController *-- IExpenseService
+    ExpenseController *-- IMapper
 
-    BudgetController --> BudgetService
-    BudgetController --> CreateBudgetRequestMapper
-    BudgetController --> BudgetResponseMapper
+    RecurrentExpenseController *-- IRecurrentExpenseService
+    RecurrentExpenseController *-- IMapper
 
-    SummaryController --> ExpenseService
-    SummaryController --> IncomeService
+    IncomeController *-- IIncomeService
+    IncomeController *-- IMapper
 
-    GoalController --> GoalService
-    GoalController --> CreateGoalRequestMapper
-    GoalController --> GoalResponseMapper
+    BudgetController *-- IBudgetService
+    BudgetController *-- IMapper
 
+    GoalController *-- IGoalService
+    GoalController *-- IMapper
+
+    ReportController *-- IReportService
 }
 
 
