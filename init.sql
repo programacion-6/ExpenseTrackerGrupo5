@@ -24,6 +24,17 @@ CREATE TABLE IF NOT EXISTS expenses (
     category VARCHAR NOT NULL,
     date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+);
+
+CREATE TABLE IF NOT EXISTS recurrentExpense (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    currency VARCHAR NOT NULL,
+    amount DECIMAL NOT NULL,
+    description VARCHAR NOT NULL,
+    category VARCHAR NOT NULL,
+    date DATE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     is_recurrent BOOLEAN NOT NULL,
     last_calculation TIMESTAMP NOT NULL
 );

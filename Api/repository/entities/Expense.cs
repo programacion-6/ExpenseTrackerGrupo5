@@ -8,6 +8,4 @@ public class Expense : IEntityBase
     public string Category { get; set; } = string.Empty;
     public DateTime Date { get; set; }
     public DateTime CreatedAt { get; set; }
-    public bool IsRecurrent { get; set; }
-    public DateTime LastCalculation { get; set; }
 }
