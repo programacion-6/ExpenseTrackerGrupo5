@@ -65,6 +65,11 @@ package "DOMAIN LAYER" {
                 +string Password
             }
 
+            class AuthResponse {
+                +string Token
+                +DateTime ExpiresAt
+            }
+
             class UpdateUserRequest {
                 +string Name
                 +string Email
@@ -81,104 +86,106 @@ package "DOMAIN LAYER" {
 
         package "Expense DTOs" {
             class CreateExpenseRequest {
+                +string Currency
                 +decimal Amount
                 +string Description
                 +string Category
                 +DateTime Date
-                +string Currency
-            }
-
-            class UpdateExpenseRequest {
-                +decimal Amount
-                +string Description
-                +string Category
-                +DateTime Date
-                +string Currency
             }
 
             class ExpenseResponse {
                 +Guid Id
+                +Guid UserId
+                +string Currency
                 +decimal Amount
                 +string Description
                 +string Category
                 +DateTime Date
                 +DateTime CreatedAt
+            }
+
+            class UpdateExpenseRequest {
                 +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
             }
         }
 
         package "Recurrent Expense DTOs" {
             class CreateRecurrentExpenseRequest {
+                +string Currency
                 +decimal Amount
                 +string Description
                 +string Category
                 +DateTime Date
-                +string Currency
             }
 
             class UpdateRecurrentExpenseRequest {
+                +string Currency
                 +decimal Amount
                 +string Description
                 +string Category
                 +DateTime Date
-                +string Currency
             }
 
             class RecurrentExpenseResponse {
                 +Guid Id
+                +Guid UserId
+                +string Currency
                 +decimal Amount
                 +string Description
                 +string Category
                 +DateTime Date
                 +DateTime CreatedAt
-                +string Currency
             }
         }
 
         package "Income DTOs" {
-            class CreateIncomeRequest {
+             class CreateIncomeRequest {
+                +string Currency
                 +decimal Amount
                 +string Source
                 +DateTime Date
-                +string Currency
             }
-
-            class UpdateIncomeRequest {
-                +decimal Amount
-                +string Source
-                +DateTime Date
-                +string Currency
-            }
-
+        
             class IncomeResponse {
                 +Guid Id
+                +Guid UserId
+                +string Currency
                 +decimal Amount
                 +string Source
                 +DateTime Date
                 +DateTime CreatedAt
+            }
+        
+            class UpdateIncomeRequest {
                 +string Currency
+                +decimal Amount
+                +string Source
+                +DateTime Date
             }
         }
 
         package "Budget DTOs" {
             class CreateBudgetRequest {
-                +DateTime Month
                 +string Currency
                 +decimal Amount
             }
 
             class UpdateBudgetRequest {
-                +DateTime Month
                 +string Currency
                 +decimal Amount
             }
 
             class BudgetResponse {
                 +Guid Id
-                +DateTime Month
+                +Guid UserId
+                +string Currency
                 +decimal Amount
                 +decimal CurrentAmount
-                +string Currency
+                +DateTime Month
             }
         }
 
@@ -197,11 +204,12 @@ package "DOMAIN LAYER" {
 
             class GoalResponse {
                 +Guid Id
+                +Guid UserId
+                +string Currency
                 +decimal GoalAmount
                 +decimal CurrentAmount
                 +DateTime Deadline
                 +DateTime CreatedAt
-                +string Currency
             }
         }
 
