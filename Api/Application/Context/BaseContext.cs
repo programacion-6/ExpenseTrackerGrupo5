@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Data;
-using Dapper;
 using Npgsql;
 
 public class BaseContext
@@ -30,11 +28,4 @@ public class BaseContext
         }
     }
 
-    public IEnumerable<User> GetAllUsers()
-    {
-        OpenConnection();
-        var users = _connection.Query<User>("SELECT * FROM Users");
-        CloseConnection();
-        return users;
-    }
 }
