@@ -1,8 +1,7 @@
-using Api.Domain.Entities;
 
 namespace DefaultNamespace;
 
-public interface IRepository<T> where T : EntityBase
+public interface IRepository<T> where T : IEntityBase
 {
     bool Save (T item);
     bool Delete (T item);

@@ -1,8 +1,7 @@
 namespace DefaultNamespace;
 
-public class IExpenseRepository
+public interface IExpenseRepository : IRepository<Expense>
 {
-    List<Expense> GetByDateRange(DateTime startDate, DateTime endDate);
-    List<Expense> GetByCategory(string category);
-    List<Expense> GetRecurrentExpenses();
+    List<Expense> GetUserExpenseByDateRange(Guid userId, DateTime startDate, DateTime endDate);
+    List<Expense> GetUserExpenseByCategory(Guid userId, string category);
 }

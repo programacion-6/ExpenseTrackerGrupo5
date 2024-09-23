@@ -1,9 +1,7 @@
-using Api.Domain.Entities;
 
 namespace DefaultNamespace;
 
-public interface IGoalRepository<T> : IRepository<T> where T : EntityBase
+public interface IGoalRepository : IRepository<Goal>
 {
-    List<Goal> GetCurrentGoals();
-    List<Goal> GetByGoalAmountRange(decimal minGoal, decimal maxGoal);
+    List<Goal> GetActiveUserGoals(Guid userId);
 }

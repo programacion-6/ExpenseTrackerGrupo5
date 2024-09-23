@@ -1,7 +1,6 @@
 namespace DefaultNamespace;
 
-public interface IncomeRepository
+public interface IncomeRepository : IRepository<Income>
 {
-    List<Income> GetByDateRange(DateTime startDate, DateTime endDate);
-    List<Income> GetBySource(string source);
+    List<Income> GetUserIncomeBySource(Guid userId, string source);
 }
