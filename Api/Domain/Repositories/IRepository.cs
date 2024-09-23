@@ -1,5 +1,4 @@
-
-namespace DefaultNamespace;
+namespace Api.Domain;
 
 public interface IRepository<T> where T : IEntityBase
 {
