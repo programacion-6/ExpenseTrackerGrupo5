@@ -1,0 +1,625 @@
+@startuml ExpenseTracker - Group5
+
+package "DOMAIN LAYER" {
+
+    package "Entities" {
+        interface EntityBase {
+            +Guid Id
+        }
+
+        class User implements EntityBase {
+            +string Name
+            +string Email
+            +string PasswordHash
+            +DateTime CreatedAt
+        }
+
+        class Expense implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal Amount
+            +string Description
+            +string Category
+            +DateTime Date
+            +DateTime CreatedAt
+        }
+
+        class RecurrentExpense extends Expense {
+            +DateTime LastCalculation
+        }
+
+        class Income implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal Amount
+            +string Source
+            +DateTime Date
+            +DateTime CreatedAt
+        }
+
+        class Budget implements EntityBase {
+            +Guid UserId
+            +DateTime Month
+            +string Currency
+            +decimal Amount
+            +decimal CurrentAmount
+        }
+
+        class Goal implements EntityBase {
+            +Guid UserId
+            +string Currency
+            +decimal GoalAmount
+            +DateTime Deadline
+            +decimal CurrentAmount
+            +DateTime CreatedAt
+        }
+
+    }
+
+    package "DTOs" {
+
+        package "User DTOs" {
+            class CreateUserRequest {
+                +string Name
+                +string Email
+                +string Password
+            }
+
+            class AuthResponse {
+                +string Token
+                +DateTime ExpiresAt
+            }
+
+            class UpdateUserRequest {
+                +string Name
+                +string Email
+                +string Password
+            }
+
+            class UserResponse {
+                +Guid Id
+                +string Name
+                +string Email
+                +DateTime CreatedAt
+            }
+        }
+
+        package "Expense DTOs" {
+            class CreateExpenseRequest {
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+            }
+
+            class ExpenseResponse {
+                +Guid Id
+                +Guid UserId
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +DateTime CreatedAt
+            }
+
+            class UpdateExpenseRequest {
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+            }
+        }
+
+        package "Recurrent Expense DTOs" {
+            class CreateRecurrentExpenseRequest {
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+            }
+
+            class UpdateRecurrentExpenseRequest {
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+            }
+
+            class RecurrentExpenseResponse {
+                +Guid Id
+                +Guid UserId
+                +string Currency
+                +decimal Amount
+                +string Description
+                +string Category
+                +DateTime Date
+                +DateTime CreatedAt
+            }
+        }
+
+        package "Income DTOs" {
+            class CreateIncomeRequest {
+                +string Currency
+                +decimal Amount
+                +string Source
+                +DateTime Date
+            }
+
+            class IncomeResponse {
+                +Guid Id
+                +Guid UserId
+                +string Currency
+                +decimal Amount
+                +string Source
+                +DateTime Date
+                +DateTime CreatedAt
+            }
+
+            class UpdateIncomeRequest {
+                +string Currency
+                +decimal Amount
+                +string Source
+                +DateTime Date
+            }
+        }
+
+        package "Budget DTOs" {
+            class CreateBudgetRequest {
+                +string Currency
+                +decimal Amount
+            }
+
+            class UpdateBudgetRequest {
+                +string Currency
+                +decimal Amount
+            }
+
+            class BudgetResponse {
+                +Guid Id
+                +Guid UserId
+                +string Currency
+                +decimal Amount
+                +decimal CurrentAmount
+                +DateTime Month
+            }
+        }
+
+        package "Goal DTOs" {
+            class CreateGoalRequest {
+                +decimal GoalAmount
+                +DateTime Deadline
+                +string Currency
+            }
+
+            class UpdateGoalRequest {
+                +decimal GoalAmount
+                +DateTime Deadline
+                +string Currency
+            }
+
+            class GoalResponse {
+                +Guid Id
+                +Guid UserId
+                +string Currency
+                +decimal GoalAmount
+                +decimal CurrentAmount
+                +DateTime Deadline
+                +DateTime CreatedAt
+            }
+        }
+
+        package "Report DTOs" {
+            class MonthlySummary {
+                +decimal TotalIncome
+                +decimal TotalExpenses
+                +decimal RemainingBudget
+                +string HighestSpendingCategory
+                +string Currency
+            }
+
+            class ExpenseInsightsResponse {
+                +decimal TotalExpenses
+                +string HighestSpendingCategory
+                +DateTime MostExpensiveMonth
+                +string Currency
+            }
+        }
+    }
+
+    package "Repositories" {
+        interface IRepository<T implements EntityBase> {
+            +bool Save(T item)
+            +bool Update(T item)
+            +bool Delete(T item)
+            +T GetById(Guid itemId)
+            +List<T> GetAll()
+        }
+
+        interface IUserRepository extends IRepository<User> {
+            +User GetByEmail(string email)
+        }
+
+        interface IExpenseRepository extends IRepository<Expense> {
+            +List<Expense> GetUserExpenseByDateRange(Guid userId, DateTime startDate, DateTime endDate)
+            +List<Expense> GetUserExpenseByCategory(Guid userId, string category)
+        }
+
+        interface IRecurrentExpenseRepository extends IRepository<RecurrentExpense> {
+            +List<RecurrentExpense> GetUserRecurrentExpensesByMonth(Guid userId, DateTime month)
+        }
+
+        interface IIncomeRepository extends IRepository<Income> {
+            +List<Income> GetUserIncomeBySource(Guid userId, string source)
+        }
+
+        interface IBudgetRepository extends IRepository<Budget> {
+            +Budget GetUserBudgetByMonth(Guid userId, DateTime month)
+        }
+
+        interface IGoalRepository extends IRepository<Goal> {
+            +List<Goal> GetActiveUserGoals(Guid userId)
+        }
+    }
+
+    package "Utils" {
+        class IEncryptor {
+            + Encrypt(string text)
+            + Decrypt(string text)
+        }
+
+        interface ITokenHandler {
+            +string GenerateToken(User user)
+        }
+
+        interface IUserNotifier {
+            +void NotifyUser(User user, string message)
+        }
+    }
+
+    package "Services" {
+        interface IAuthenticationService {
+            +void Register(string name, string email, string password)
+            +string Login(string email, string password)
+        }
+
+        interface IUserManagementService {
+            +void ResetPassword(string email, string newPassword)
+            +void EditProfile(Guid userId, string newName, string newEmail, string newPassword)
+        }
+
+        interface IExpenseService {
+            +void AddUserExpense(Expense expense)
+            +void UpdateUserExpense(Expense expense)
+            +void DeleteUserExpense(Guid userId, Guid expenseId)
+            +Expense GetUserExpenseById(Guid userId, Guid expenseId)
+            +List<Expense> GetUserExpensesByCategory(Guid userId, string category)
+            +List<Expense> GetUserExpensesByDateRange(Guid userId, DateTime start, DateTime end)
+        }
+
+        interface IRecurrentExpenseService {
+            +void AddUserRecurrentExpense(RecurrentExpense expense)
+            +void UpdateUserRecurrentExpense(RecurrentExpense expense)
+            +void DeleteUserRecurrentExpense(Guid userId, Guid expenseId)
+            +void CalculateUserRecurrentExpenseMonthly(Guid userId)
+        }
+
+        interface IIncomeService {
+            +void AddUserIncome(Income income)
+            +void UpdateUserIncome(Income income)
+            +void DeleteUserIncome(Guid userId, Guid incomeId)
+            +Income GetUserIncomeById(Guid userId, Guid incomeId)
+            +List<Income> GetUserIncomesBySource(Guid userId, string source)
+        }
+
+        interface IBudgetService {
+            +void AddUserBudget(Budget budget)
+            +void UpdateUserBudget(Budget budget)
+            +void DeleteCurrentUserBudget(Guid userId, Guid budgetId)
+            +Budget GetCurrentUserBudget(Guid userId)
+            +Budget GetUserBudgetByMonth(Guid userId, DateTime month)
+        }
+
+        interface IGoalService {
+            +void AddUserGoal(Goal goal)
+            +void UpdateUserGoal(Goal goal)
+            +void DeleteUserGoal(Guid userId, Guid goalId)
+            +void GetActiveUserGoals(Guid userId)
+        }
+
+        interface IReportService {
+            +MonthlySummaryResponse GetUserMonthlySummary(Guid userId)
+            +ExpenseInsightsResponse GetUserExpenseInsightsResponse(Guid userId)
+        }
+    }
+
+}
+
+package "APLICATION LAYER" {
+    package "DTOs" {
+        class Profile
+        note left: external library class
+
+        class MappingProfile extends Profile {
+            +MappingProfile()
+        }
+    }
+
+    package "Validators" {
+        interface AbstractValidator
+        note left: external library interface
+
+        class UserValidator implements AbstractValidator<User> {
+            +UserValidator()
+        }
+
+        class ExpenseValidator implements AbstractValidator<Expense> {
+            +ExpenseValidator()
+        }
+
+        class RecurrentExpenseValidator implements AbstractValidator<RecurrentExpense> {
+            +RecurrentExpenseValidator()
+        }
+
+        class IncomeValidator implements AbstractValidator<Income> {
+            +IncomeValidator()
+        }
+
+        class BudgetValidator implements AbstractValidator<Budget> {
+            +BudgetValidator()
+        }
+
+        class GoalValidator implements AbstractValidator<Goal> {
+            +GoalValidator()
+        }
+
+        UserValidator *-- User
+        ExpenseValidator *-- Expense
+        RecurrentExpenseValidator *-- RecurrentExpense
+        IncomeValidator *-- Income
+        BudgetValidator *-- Budget
+        GoalValidator *-- Goal
+    }
+
+    package "Repositories" {
+        class UserRepository {
+        }
+
+        class ExpenseRepository {
+        }
+
+        class RecurrentExpenseRepository {
+        }
+
+        class IncomeRepository {
+        }
+
+        class BudgetRepository {
+        }
+
+        class GoalRepository {
+        }
+
+        UserRepository ..|> IUserRepository
+        ExpenseRepository ..|> IExpenseRepository
+        RecurrentExpenseRepository ..|> IRecurrentExpenseRepository
+        IncomeRepository ..|> IIncomeRepository
+        BudgetRepository ..|> IBudgetRepository
+        GoalRepository ..|> IGoalRepository
+    }
+
+    package "Utils" {
+        class Encryptor {
+        }
+
+        class TokenHandler {
+        }
+
+        class EmailNotificator {
+            +void NotifyUser(User user, string message)
+        }
+
+        EmailNotificator ..|> IUserNotifier
+        TokenHandler ..|> ITokenHandler
+        Encryptor ..|> IEncryptor
+    }
+
+    package "Services" {
+        class AuthenticationService {
+            -IUserRepository userRepository
+            -ITokenHandler tokenHandler
+            -IEncryptor encryptor
+        }
+
+        AuthenticationService ..|> IAuthenticationService
+        AuthenticationService *-- IUserRepository
+        AuthenticationService *-- ITokenHandler
+        AuthenticationService *-- IEncryptor
+
+        class UserManagementService {
+            -IUserRepository userRepository
+            -ITokenHandler tokenHandler
+            -IEncryptor encryptor
+            -IUserNotifier userNotifier
+        }
+
+        UserManagementService ..|> IUserManagementService
+        UserManagementService *-- IUserRepository
+        UserManagementService *-- ITokenHandler
+        UserManagementService *-- IEncryptor
+        UserManagementService *-- IUserNotifier
+
+        class ExpenseService {
+            -IExpenseRepository expenseRepository
+        }
+
+        ExpenseService ..|> IExpenseService
+        ExpenseService *-- IExpenseRepository
+
+        class RecurrentExpenseService {
+            -IRecurrentExpenseRepository expenseRepository
+        }
+
+        RecurrentExpenseService ..|> IRecurrentExpenseService
+        RecurrentExpenseService *-- IRecurrentExpenseRepository
+
+        class IncomeService {
+            -IIncomeRepository incomeRepository
+        }
+
+        IncomeService ..|> IIncomeService
+        IncomeService *-- IIncomeRepository
+
+        class BudgetService {
+            -IBudgetRepository budgetRepository
+            -IUserNotifier userNotificator
+        }
+
+        BudgetService ..|> IBudgetService
+        BudgetService *-- IBudgetRepository
+        BudgetService *-- IUserNotifier
+
+        class GoalService {
+            -IGoalRepository goalRepository
+            -IUserNotifier userNotificator
+        }
+
+        GoalService ..|> IGoalService
+        GoalService *-- IGoalRepository
+        GoalService *-- IUserNotifier
+
+        class ReportService {
+            -IExpenseRepository expenseRepository
+            -IRecurrentExpenseRepository recurrentExpenseRepository
+            -IBudgetRepository budgetRepository
+        }
+
+        ReportService ..|> IReportService
+        ReportService *-- IExpenseRepository
+        ReportService *-- IRecurrentExpenseRepository
+        ReportService *-- IBudgetRepository
+    }
+}
+
+package "PRESENTATION LAYER" {
+
+    interface IMapper
+    note left: external library interface
+
+    class AuthenticationController {
+        -IAuthenticationService authService
+        -IMapper<CreateUserRequest, User> userMapperFromRequest
+
+        +void Register(CreateUserRequest dto)
+        +AuthResponse Login(string email, string password)
+    }
+
+    AuthenticationController *-- IAuthenticationService
+    AuthenticationController *-- IMapper
+
+    class UserController {
+        -IUserManagementService userService
+        -IMapper<UpdateUserRequest, User> userMapperFromUpdateRequest
+        -IMapper<User, UserResponse> userMapperToResponse
+
+        +void UpdateProfile(UpdateUserRequest dto)
+        +void ResetPassword(string email, string newPassword)
+    }
+
+    UserController *-- IUserManagementService
+    UserController *-- IMapper
+
+    class ExpenseController {
+        -IExpenseService expenseService
+        -IMapper<CreateExpenseRequest, Expense> expenseMapperFromCreateRequest
+        -IMapper<UpdateExpenseRequest, Expense> expenseMapperFromUpdateRequest
+        -IMapper<Expense, ExpenseResponse> expenseMapperToResponse
+
+        +void AddExpense(CreateExpenseRequest dto)
+        +void UpdateExpense(UpdateExpenseRequest dto)
+        +void DeleteExpense(Guid expenseId)
+        +ExpenseResponse GetExpenseById(Guid expenseId)
+        +List<ExpenseResponse> GetExpensesByCategory(string category)
+        +List<ExpenseResponse> GetExpensesByDateRange(DateTime start, DateTime end)
+    }
+
+    ExpenseController *-- IExpenseService
+    ExpenseController *-- IMapper
+
+    class RecurrentExpenseController {
+        -IRecurrentExpenseService recurrentExpenseService
+        -IMapper<CreateRecurrentExpenseRequest, RecurrentExpense> recurrentExpenseMapperFromCreateRequest
+        -IMapper<UpdateRecurrentExpenseRequest, RecurrentExpense> recurrentExpenseMapperFromUpdateRequest
+        -IMapper<RecurrentExpense, RecurrentExpenseResponse> recurrentExpenseMapperToResponse
+
+        +void AddRecurrentExpense(CreateRecurrentExpenseRequest dto)
+        +void UpdateRecurrentExpense(UpdateRecurrentExpenseRequest dto)
+        +void DeleteRecurrentExpense(Guid expenseId)
+        +void CalculateRecurrentExpenses()
+    }
+
+    RecurrentExpenseController *-- IRecurrentExpenseService
+    RecurrentExpenseController *-- IMapper
+
+    class IncomeController {
+        -IIncomeService incomeService
+        -IMapper<CreateIncomeRequest, Income> incomeMapperFromCreateRequest
+        -IMapper<UpdateIncomeRequest, Income> incomeMapperFromUpdateRequest
+        -IMapper<Income, IncomeResponse> incomeMapperToResponse
+
+        +void AddIncome(CreateIncomeRequest dto)
+        +void UpdateIncome(UpdateIncomeRequest dto)
+        +void DeleteIncome(Guid incomeId)
+        +IncomeResponse GetIncomeById(Guid incomeId)
+        +List<IncomeResponse> GetIncomesBySource(string source)
+    }
+
+    IncomeController *-- IIncomeService
+    IncomeController *-- IMapper
+
+    class BudgetController {
+        -IBudgetService budgetService
+        -IMapper<CreateBudgetRequest, Budget> budgetMapperFromCreateRequest
+        -IMapper<UpdateBudgetRequest, Budget> budgetMapperFromUpdateRequest
+        -IMapper<Budget, BudgetResponse> budgetMapperToResponse
+
+        +void AddBudget(CreateBudgetRequest dto)
+        +void UpdateBudget(UpdateBudgetRequest dto)
+        +void DeleteBudget(Guid budgetId)
+        +BudgetResponse GetCurrentBudget()
+        +BudgetResponse GetBudgetByMonth(DateTime month)
+    }
+
+    BudgetController *-- IBudgetService
+    BudgetController *-- IMapper
+
+    class GoalController {
+        -IGoalService goalService
+        -IMapper<CreateGoalRequest, Goal> goalMapperFromCreateRequest
+        -IMapper<UpdateGoalRequest, Goal> goalMapperFromUpdateRequest
+        -IMapper<Goal, GoalResponse> goalMapperToResponse
+
+        +void AddGoal(CreateGoalRequest dto)
+        +void UpdateGoal(UpdateGoalRequest dto)
+        +void DeleteGoal()
+        +List<GoalResponse> GetActiveGoals()
+    }
+
+    GoalController *-- IGoalService
+    GoalController *-- IMapper
+
+    class ReportController {
+        -IReportService reportService
+        +MonthlySummary GetMonthlySummary()
+        +ExpenseInsightsResponse GetExpenseInsights()
+    }
+
+    ReportController *-- IReportService
+}
+
+
+@enduml
