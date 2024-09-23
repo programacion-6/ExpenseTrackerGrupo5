@@ -1,3 +1,5 @@
+namespace Api.Domain;
+
 public class Goal : IEntityBase
 {
     public Guid Id { get; set; } = Guid.NewGuid();

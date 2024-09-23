@@ -1,3 +1,5 @@
+namespace Api.Domain;
+
 public class Budget : IEntityBase
 {
     public Guid Id { get; set; } = Guid.NewGuid();
