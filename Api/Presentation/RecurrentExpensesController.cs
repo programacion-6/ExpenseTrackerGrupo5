@@ -2,10 +2,13 @@ using Api.Domain;
 
 using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/recurrentexpenses")]
+[Authorize]
 public class RecurrentExpensesController : ControllerBase
 {
     private readonly IMapper _mapper;

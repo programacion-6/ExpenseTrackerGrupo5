@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/summary")]
+[Authorize]
 public class InsightsController : ControllerBase
 {
     [HttpGet("monthlyexpenses")]
