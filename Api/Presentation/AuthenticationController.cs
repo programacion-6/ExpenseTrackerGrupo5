@@ -1,3 +1,4 @@
+using Api.Application;
 using Api.Domain;
 
 using AutoMapper;
@@ -9,21 +10,65 @@ using Microsoft.AspNetCore.Mvc;
 public class AuthenticationController : ControllerBase
 {
     private readonly IMapper _mapper;
+    private readonly IAuthenticationService _authenticationService;
 
-    public AuthenticationController(IMapper mapper)
+    public AuthenticationController(IMapper mapper, IAuthenticationService authenticationService)
     {
         _mapper = mapper;
+        _authenticationService = authenticationService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] CreateUserRequest createUserRequest)
     {
-        return Ok("No implemented");
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userToRegister = _mapper.Map<User>(createUserRequest);
+            var token = await _authenticationService.Register(userToRegister);
+            var expiresAt = DateTime.Now.AddDays(JwtConstants.ExpirationDays);
+            var authResponse = new AuthResponse(token, expiresAt);
+
+            return Ok(authResponse);
+        }
+        catch (AuthenticationException exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, $"Internal server error: {exception.Message}");
+        }
+
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
-        return Ok("No implemented");
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var token = await _authenticationService.Login(loginRequest.Email, loginRequest.Password);
+            var expiresAt = DateTime.Now.AddDays(JwtConstants.ExpirationDays);
+            var authResponse = new AuthResponse(token, expiresAt);
+
+            return Ok(authResponse);
+        }
+        catch (AuthenticationException exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 }
