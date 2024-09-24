@@ -2,10 +2,13 @@ using Api.Domain;
 
 using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/budgets")]
+[Authorize]
 public class BudgetController : ControllerBase
 {
     private readonly IMapper _mapper;

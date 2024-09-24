@@ -1,10 +1,14 @@
 using Api.Domain;
 using Api.Domain.Services;
 using AutoMapper;
+
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/expenses")]
+[Authorize]
 public class ExpensesController : ControllerBase
 {
     private readonly IMapper _mapper;
