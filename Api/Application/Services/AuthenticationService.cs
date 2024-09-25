@@ -19,6 +19,7 @@ public class AuthenticationService : IAuthenticationService
         if (userFound is null)
         {
             user.Email = user.Email.ToLower();
+            user.Name = user.Name.TrimStart().TrimEnd();
             user.PasswordHash = _hashingHandler.Hash(user.PasswordHash);
             var wasRegistered = await _userRepository.Save(user);
 
