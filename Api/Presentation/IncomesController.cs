@@ -26,32 +26,53 @@ public class IncomesController : ControllerBase
         if (createIncomeRequest == null)
             return BadRequest("Invalid income request.");
 
-        var income = _mapper.Map<Income>(createIncomeRequest);
-        income.Id = Guid.NewGuid();
-        income.CreatedAt = DateTime.UtcNow;
+        try
+        {
+            var income = _mapper.Map<Income>(createIncomeRequest);
+            income.Id = Guid.NewGuid();
+            income.CreatedAt = DateTime.UtcNow;
 
-        var success = await _incomeService.CreateAsync(income);
-        if (success)
-            return CreatedAtAction(nameof(GetIncomeById), new { id = income.Id }, _mapper.Map<IncomeResponse>(income));
+            var success = await _incomeService.CreateAsync(income);
+            if (success)
+                return CreatedAtAction(nameof(GetIncomeById), new { id = income.Id }, _mapper.Map<IncomeResponse>(income));
 
-        return StatusCode(500, "An error occurred while logging the income.");
+            return StatusCode(500, "An error occurred while logging the income.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllIncomes()
     {
-        var incomes = await _incomeService.GetAllAsync();
-        return Ok(_mapper.Map<IEnumerable<IncomeResponse>>(incomes));
+        try
+        {
+            var incomes = await _incomeService.GetAllAsync();
+            return Ok(_mapper.Map<IEnumerable<IncomeResponse>>(incomes));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetIncomeById(Guid id)
     {
-        var income = await _incomeService.GetByIdAsync(id);
-        if (income == null)
-            return NotFound();
+        try
+        {
+            var income = await _incomeService.GetByIdAsync(id);
+            if (income == null)
+                return NotFound();
 
-        return Ok(_mapper.Map<IncomeResponse>(income));
+            return Ok(_mapper.Map<IncomeResponse>(income));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpPut("{id}")]
@@ -60,31 +81,45 @@ public class IncomesController : ControllerBase
         if (updateIncomeRequest == null)
             return BadRequest("Invalid income request.");
 
-        var existingIncome = await _incomeService.GetByIdAsync(id);
-        if (existingIncome == null)
-            return NotFound();
+        try
+        {
+            var existingIncome = await _incomeService.GetByIdAsync(id);
+            if (existingIncome == null)
+                return NotFound();
 
-        var incomeToUpdate = _mapper.Map<Income>(updateIncomeRequest);
-        incomeToUpdate.Id = id; // Asignar el ID existente
+            var incomeToUpdate = _mapper.Map<Income>(updateIncomeRequest);
+            incomeToUpdate.Id = id; 
 
-        var success = await _incomeService.UpdateAsync(incomeToUpdate);
-        if (success)
-            return Ok("Income updated successfully.");
+            var success = await _incomeService.UpdateAsync(incomeToUpdate);
+            if (success)
+                return Ok("Income updated successfully.");
 
-        return StatusCode(500, "An error occurred while updating the income.");
+            return StatusCode(500, "An error occurred while updating the income.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
-        var existingIncome = await _incomeService.GetByIdAsync(id);
-        if (existingIncome == null)
-            return NotFound();
+        try
+        {
+            var existingIncome = await _incomeService.GetByIdAsync(id);
+            if (existingIncome == null)
+                return NotFound();
 
-        var success = await _incomeService.DeleteAsync(id);
-        if (success)
-            return Ok("Income deleted successfully.");
+            var success = await _incomeService.DeleteAsync(id);
+            if (success)
+                return Ok("Income deleted successfully.");
 
-        return StatusCode(500, "An error occurred while deleting the income.");
+            return StatusCode(500, "An error occurred while deleting the income.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 }
