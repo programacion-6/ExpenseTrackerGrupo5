@@ -31,16 +31,16 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
         return result > 0;
     }
 
-    public Income GetById(Guid itemId)
+    public async Task<Income?> GetById(Guid itemId)
     {
         var query = "SELECT * FROM Incomes WHERE Id = @Id";
-        return _dbConnection.QuerySingleOrDefault<Income>(query, new { Id = itemId });
+        return await _dbConnection.QuerySingleOrDefaultAsync<Income>(query, new { Id = itemId });
     }
 
-    public List<Income> GetAll()
+    public async Task<List<Income>> GetAll()
     {
         var query = "SELECT * FROM Incomes";
-        return _dbConnection.Query<Income>(query).AsList();
+        return (await _dbConnection.QueryAsync<Income>(query)).AsList();
     }
 
     public List<Income> GetUserIncomeBySource(Guid userId, string source)
