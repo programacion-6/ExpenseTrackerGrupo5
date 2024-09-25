@@ -3,6 +3,8 @@ using Api.Domain;
 
 using AutoMapper;
 
+using FluentValidation;
+
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -11,11 +13,13 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IAuthenticationService _authenticationService;
+    private readonly IValidator<User> _userValidator;
 
-    public AuthenticationController(IMapper mapper, IAuthenticationService authenticationService)
+    public AuthenticationController(IMapper mapper, IAuthenticationService authenticationService, IValidator<User> userValidator)
     {
         _mapper = mapper;
         _authenticationService = authenticationService;
+        _userValidator = userValidator;
     }
 
     [HttpPost("register")]
@@ -29,6 +33,11 @@ public class AuthenticationController : ControllerBase
         try
         {
             var userToRegister = _mapper.Map<User>(createUserRequest);
+            var validationResult = await _userValidator.ValidateAsync(userToRegister);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
             var token = await _authenticationService.Register(userToRegister);
             var expiresAt = DateTime.Now.AddDays(JwtConstants.ExpirationDays);
             var authResponse = new AuthResponse(token, expiresAt);
