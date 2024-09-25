@@ -1,10 +1,13 @@
 using Api.Domain;
-using Api.Domain.Services;
+
 using AutoMapper;
 
 using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/expenses")]
@@ -140,7 +143,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpPost("filter/category")]
-    public async Task<IActionResult> GetExpensesByCategory([FromBody] CategoryFilterRequest categoryFilterRequest)
+    public async Task<IActionResult> GetExpensesByCategory(string category)
     {
         try
         {
@@ -153,7 +156,6 @@ public class ExpensesController : ControllerBase
         }
     }
 }
-
 
 public record DateRangeRequest(Guid UserId, DateTime StartDate, DateTime EndDate);
 public record CategoryFilterRequest(Guid UserId, string Category);
