@@ -21,17 +21,21 @@ public class IncomeService : IIncomeService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var income = _incomeRepository.GetById(id);
-        return await _incomeRepository.Delete(income);
+        var income = await _incomeRepository.GetById(id);
+        if (income != null)
+        {
+            return await _incomeRepository.Delete(income);
+        }
+        return false;
     }
 
     public async Task<Income> GetByIdAsync(Guid id)
     {
-        return _incomeRepository.GetById(id);
+        return await _incomeRepository.GetById(id);
     }
 
     public async Task<IEnumerable<Income>> GetAllAsync()
     {
-        return _incomeRepository.GetAll();
+        return await _incomeRepository.GetAll();
     }
 }
