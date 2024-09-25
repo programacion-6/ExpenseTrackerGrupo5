@@ -2,6 +2,8 @@ using Api.Domain;
 
 using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -16,6 +18,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("profile")]
+    [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserRequest updateUserRequest)
     {
         return Ok("User profile updated successfully.");

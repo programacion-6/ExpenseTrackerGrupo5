@@ -1,11 +1,16 @@
+using System.Security.Claims;
+
 using Api.Domain;
 
 using AutoMapper;
+
+using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/incomes")]
+[Authorize]
 public class IncomesController : ControllerBase
 {
     private readonly IMapper _mapper;
@@ -18,7 +23,9 @@ public class IncomesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> LogIncome([FromBody] CreateIncomeRequest createIncomeRequest)
     {
-        return Ok("Income logged successfully.");
+        // This is an example of how to get the user id when he or she is authenticated
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Ok($"Income logged successfully for user with id: {userId}");
     }
 
     [HttpGet]
