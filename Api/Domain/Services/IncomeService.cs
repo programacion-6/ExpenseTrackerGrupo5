@@ -21,7 +21,7 @@ public class IncomeService : IIncomeService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var income = _incomeRepository.GetById(id); // Necesitamos obtener el objeto para eliminarlo
+        var income = _incomeRepository.GetById(id);
         return await _incomeRepository.Delete(income);
     }
 
