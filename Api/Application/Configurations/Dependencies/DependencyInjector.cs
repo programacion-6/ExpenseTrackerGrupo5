@@ -11,17 +11,17 @@ public static class DependencyInjector
         InjectServices(services);
     }
 
-    public static void InjectRepositories(IServiceCollection services)
+    private static void InjectRepositories(IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
     }
 
-    public static void InjectServices(IServiceCollection services)
+    private static void InjectServices(IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
     }
 
-    public static void InjectUtilsHandlers(IServiceCollection services)
+    private static void InjectUtilsHandlers(IServiceCollection services)
     {
         services.AddScoped<IHashingHandler, PasswordHashingHandler>();
         services.AddScoped<ITokenHandler, TokenHandler>();
