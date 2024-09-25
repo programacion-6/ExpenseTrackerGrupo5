@@ -1,4 +1,4 @@
-namespace DefaultNamespace;
+namespace Api.Domain;
 
 public interface IExpenseRepository : IRepository<Expense>
 {

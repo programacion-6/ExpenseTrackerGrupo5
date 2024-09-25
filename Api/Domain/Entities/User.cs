@@ -1,3 +1,5 @@
+namespace Api.Domain;
+
 public class User : IEntityBase
 {
     public Guid Id { get; set; } = Guid.NewGuid();
