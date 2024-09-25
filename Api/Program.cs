@@ -2,6 +2,8 @@ using System.Data;
 
 using Api.Application;
 
+using FluentValidation.AspNetCore;
+
 using Api.Domain;
 
 using Npgsql;
@@ -33,6 +35,9 @@ builder.Services.AddSwaggerGen(SwaggerConfiguration.ConfigSwaggerGen);
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation()
+                .AddFluentValidationClientsideAdapters();
+builder.Services.AddValidators();
 builder.Services.InjectDependencies();
 builder.Services.AddTransient<IDbConnection>(
                 DatabaseConnecctionConfiguration.ConfigDatabaseConnection);
@@ -46,5 +51,4 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
-
 app.Run();
