@@ -5,9 +5,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/expenses")]
@@ -156,6 +153,7 @@ public class ExpensesController : ControllerBase
         }
     }
 }
+
 
 public record DateRangeRequest(Guid UserId, DateTime StartDate, DateTime EndDate);
 public record CategoryFilterRequest(Guid UserId, string Category);
