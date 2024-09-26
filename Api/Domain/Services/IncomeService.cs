@@ -28,7 +28,6 @@ public class IncomeService : IIncomeService
         }
         return false;
     }
-
     public async Task<Income> GetByIdAsync(Guid id)
     {
         return await _incomeRepository.GetById(id);
@@ -37,5 +36,9 @@ public class IncomeService : IIncomeService
     public async Task<IEnumerable<Income>> GetAllAsync()
     {
         return await _incomeRepository.GetAll();
+    }
+    public async Task<List<Income>> GetIncomesByUserIdAsync(Guid userId)
+    {
+        return await _incomeRepository.GetIncomesByUserId(userId);
     }
 }

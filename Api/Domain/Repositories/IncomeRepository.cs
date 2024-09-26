@@ -12,7 +12,7 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
 
     public async Task<bool> Save(Income item)
     {
-        var query = "INSERT INTO Incomes (Id, UserId, Source, Amount, Date) VALUES (@Id, @UserId, @Source, @Amount, @Date)";
+        var query = "INSERT INTO Incomes (Id, UserId, Currency, Amount, Source, Date, Created_At) VALUES (@Id, @UserId, @Currency, @Amount, @Source, @Date, @CreatedAt)";
         var result = await _dbConnection.ExecuteAsync(query, item);
         return result > 0;
     }
@@ -47,5 +47,11 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
     {
         var query = "SELECT * FROM Incomes WHERE UserId = @UserId AND Source = @Source";
         return _dbConnection.Query<Income>(query, new { UserId = userId, Source = source }).AsList();
+    }
+
+    public async Task<List<Income>> GetIncomesByUserId(Guid userId)
+    {
+        var query = "SELECT * FROM Incomes WHERE UserId = @UserId";
+        return (await _dbConnection.QueryAsync<Income>(query, new { UserId = userId })).AsList();
     }
 }
