@@ -1,10 +1,14 @@
 using System.Security.Claims;
 
 using Api.Domain;
-using Api.Domain.Services;
+
 using AutoMapper;
+
 using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
+
+using Api.Domain.Services;
 
 [ApiController]
 [Route("api/incomes")]
@@ -14,112 +18,71 @@ public class IncomesController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IIncomeService _incomeService;
 
-    public IncomesController(IMapper mapper, IIncomeService incomeService)
+    public IncomesController(IIncomeService incomeService, IMapper mapper)
     {
-        _mapper = mapper;
         _incomeService = incomeService;
+        _mapper = mapper;
     }
 
     [HttpPost]
     public async Task<IActionResult> LogIncome([FromBody] CreateIncomeRequest createIncomeRequest)
     {
-        if (createIncomeRequest == null)
-            return BadRequest("Invalid income request.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        try
+        var income = _mapper.Map<Income>(createIncomeRequest);
+        income.UserId = Guid.Parse(userId);
+
+        var result = await _incomeService.CreateAsync(income);
+
+        if (result)
         {
-            var income = _mapper.Map<Income>(createIncomeRequest);
-            income.Id = Guid.NewGuid();
-            income.CreatedAt = DateTime.UtcNow;
-
-            var success = await _incomeService.CreateAsync(income);
-            if (success)
-                return CreatedAtAction(nameof(GetIncomeById), new { id = income.Id }, _mapper.Map<IncomeResponse>(income));
-
-            return StatusCode(500, "An error occurred while logging the income.");
+            return Ok($"Income logged successfully");
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+        
+        return StatusCode(500, "Error saving income.");
     }
+
 
     [HttpGet]
     public async Task<IActionResult> GetAllIncomes()
     {
-        try
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var incomes = await _incomeService.GetIncomesByUserIdAsync(Guid.Parse(userId));
+
+        if (incomes == null || !incomes.Any())
         {
-            var incomes = await _incomeService.GetAllAsync();
-            return Ok(_mapper.Map<IEnumerable<IncomeResponse>>(incomes));
+            return NotFound("No incomes found for the current user.");
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+
+        return Ok(incomes);
     }
+
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetIncomeById(Guid id)
-    {
-        try
-        {
-            var income = await _incomeService.GetByIdAsync(id);
-            if (income == null)
-                return NotFound();
+public async Task<IActionResult> GetIncomeById(Guid id)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            return Ok(_mapper.Map<IncomeResponse>(income));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+    var income = await _incomeService.GetByIdAsync(id);
+
+    if (income == null || income.UserId != Guid.Parse(userId))
+    {
+        return NotFound("Income not found or you do not have permission to access this income.");
     }
+
+    return Ok(income);
+}
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateIncome(Guid id, [FromBody] UpdateIncomeRequest updateIncomeRequest)
     {
-        if (updateIncomeRequest == null)
-            return BadRequest("Invalid income request.");
-
-        try
-        {
-            var existingIncome = await _incomeService.GetByIdAsync(id);
-            if (existingIncome == null)
-                return NotFound();
-
-            var incomeToUpdate = _mapper.Map<Income>(updateIncomeRequest);
-            incomeToUpdate.Id = id; 
-
-            var success = await _incomeService.UpdateAsync(incomeToUpdate);
-            if (success)
-                return Ok("Income updated successfully.");
-
-            return StatusCode(500, "An error occurred while updating the income.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+        return Ok("Income updated successfully.");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
-        try
-        {
-            var existingIncome = await _incomeService.GetByIdAsync(id);
-            if (existingIncome == null)
-                return NotFound();
-
-            var success = await _incomeService.DeleteAsync(id);
-            if (success)
-                return Ok("Income deleted successfully.");
-
-            return StatusCode(500, "An error occurred while deleting the income.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+        return Ok("Income deleted successfully.");
     }
 }
