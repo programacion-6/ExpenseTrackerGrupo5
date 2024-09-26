@@ -26,6 +26,7 @@ public class TokenHandler : ITokenHandler
         {
             Subject = new ClaimsIdentity(
                 [
+                    new Claim(ClaimTypes.Email, user.Email),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 ]
             ),
