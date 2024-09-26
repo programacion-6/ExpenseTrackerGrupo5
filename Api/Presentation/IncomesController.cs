@@ -73,16 +73,48 @@ public async Task<IActionResult> GetIncomeById(Guid id)
     return Ok(income);
 }
 
-
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateIncome(Guid id, [FromBody] UpdateIncomeRequest updateIncomeRequest)
     {
-        return Ok("Income updated successfully.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var income = await _incomeService.GetByIdAsync(id);
+
+        if (income == null || income.UserId != Guid.Parse(userId))
+        {
+            return NotFound("Income not found or you do not have permission to update this income.");
+        }
+        
+        income.Currency = updateIncomeRequest.Currency;
+        income.Source = updateIncomeRequest.Source;
+        income.Amount = updateIncomeRequest.Amount;
+        income.Date = updateIncomeRequest.Date;
+
+        var result = await _incomeService.UpdateAsync(income);
+
+        if (result)
+        {
+            return Ok("Income updated successfully.");
+        }
+
+        return StatusCode(500, "Error updating income.");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
-        return Ok("Income deleted successfully.");
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var income = await _incomeService.GetByIdAsync(id);
+        if (income == null || income.UserId != userId)
+        {
+            return NotFound("Income not found or you do not have permission to delete this income.");
+        }
+        var result = await _incomeService.DeleteAsync(id); 
+        if (result)
+        {
+            return Ok("Income deleted successfully.");
+        }
+        return StatusCode(500, "Error deleting income.");
     }
+
 }
