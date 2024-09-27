@@ -30,7 +30,7 @@ public class EmailNotifier : INotifier<EmailContent>
     {
         if (emailContent.To.IsNullOrEmpty())
         {
-            throw new EmailNofiticationException("Recipient's email was not found");
+            throw new EmailNotificationException("Recipient's email was not found");
         }
 
         var email = new MimeMessage();
@@ -68,7 +68,7 @@ public class EmailNotifier : INotifier<EmailContent>
 
         if (isInvalidSmtpConfiguration)
         {
-            throw new EmailNofiticationException("Invalid SMTP server credentials");
+            throw new EmailNotificationException("Invalid SMTP server credentials");
         }
     }
 
