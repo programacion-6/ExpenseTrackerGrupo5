@@ -17,12 +17,14 @@ public static class DependencyInjector
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IIncomeRepository, IncomeRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
     }
 
     private static void InjectServices(IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<IGoalService, GoalService>();
 
     }
 

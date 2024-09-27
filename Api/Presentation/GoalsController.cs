@@ -6,28 +6,44 @@ using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Api.Domain.Services;
+
+using System.Security.Claims;
+
 [ApiController]
 [Route("api/goals")]
 [Authorize]
 public class GoalsController : ControllerBase
 {
     private readonly IMapper _mapper;
+    private readonly IGoalService _goalService;
 
-    public GoalsController(IMapper mapper)
+    public GoalsController(IGoalService goalService ,IMapper mapper)
     {
+        _goalService = goalService;
         _mapper = mapper;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateGoal([FromBody] CreateGoalRequest createGoalRequest)
     {
-        return Ok("Goal created successfully.");
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var goal = _mapper.Map<Goal>(createGoalRequest);
+        goal.UserId = userId;
+
+        var result = await _goalService.CreateAsync(goal);
+        if(result)
+        {
+            return Ok("Goal created successfully.");
+        }
+        return StatusCode(500, "Error saving goal.");
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllGoals()
     {
-        return Ok("goals");
+        var goals = await _goalService.GetAllAsync();
+        return Ok(goals);
     }
 
     [HttpGet("actives")]
