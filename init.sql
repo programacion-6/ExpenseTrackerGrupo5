@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS goals (
 
 CREATE TABLE IF NOT EXISTS incomes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     currency VARCHAR NOT NULL,
     amount DECIMAL NOT NULL,
     source VARCHAR NOT NULL,
