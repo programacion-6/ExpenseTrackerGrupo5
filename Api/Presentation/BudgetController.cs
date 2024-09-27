@@ -38,7 +38,7 @@ public class BudgetController : ControllerBase
             _emailNotifier.Notify(email);
             return Ok("Email sent");
         }
-        catch (EmailNofiticationException exception)
+        catch (EmailNotificationException exception)
         {
             return StatusCode(500, exception.Message);
         }
