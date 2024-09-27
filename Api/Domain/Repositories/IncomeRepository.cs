@@ -23,17 +23,10 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
         var result = _dbConnection.Execute(query, new { item.Id });
         return result > 0;
     }
-
-    // public async Task<bool> Update(Income item)
-    // {
-    //     var query = "UPDATE Incomes SET UserId = @UserId, Source = @Source, Amount = @Amount, Date = @Date WHERE Id = @Id";
-    //     var result = _dbConnection.Execute(query, item);
-    //     return result > 0;
-    // }
-
+    
     public async Task<bool> Update(Income item)
     {
-        var query = "UPDATE Incomes SET userid = @UserId, Source = @Source, Amount = @Amount, Date = @Date, currency = @Currency WHERE Id = @Id";
+        var query = "UPDATE Incomes SET UserId = @UserId, Source = @Source, Amount = @Amount, Date = @Date, currency = @Currency WHERE Id = @Id";
         var result = await _dbConnection.ExecuteAsync(query, item);
         return result > 0;
     }
