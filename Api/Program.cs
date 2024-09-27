@@ -1,7 +1,8 @@
+using Npgsql;
 using System.Data;
-
 using Api.Application;
-
+using Api.Domain.Services;
+using Api.Domain;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,9 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtConfiguration.ConfigAuthentication)
                 .AddJwtBearer(JwtConfiguration.ConfigBearer);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(SwaggerConfiguration.ConfigSwaggerGen);
+
 builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation()
                 .AddFluentValidationClientsideAdapters();
