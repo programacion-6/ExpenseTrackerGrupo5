@@ -14,12 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 public class BudgetController : ControllerBase
 {
     private readonly IMapper _mapper;
-    private readonly INotifier<EmailContent> _emailNotifier;
+    private readonly IBudgetService _budgetService;
 
-    public BudgetController(IMapper mapper, INotifier<EmailContent> emailNotifier)
+    public BudgetController(IMapper mapper, IBudgetService budgetService)
     {
         _mapper = mapper;
-        _emailNotifier = emailNotifier;
+        _budgetService = budgetService;
+
     }
 
     [HttpPost]
@@ -27,16 +28,7 @@ public class BudgetController : ControllerBase
     {
         try
         {
-            /* 
-            This is just a test of how to use the email service,
-            this code have to be removed
-             */
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var subjectEmail = "Subject prove";
-            var subjectBody = $"Body prove {createBudgetRequest.Currency}";
-            var email = new EmailContent(userEmail, subjectEmail, subjectBody);
-            _emailNotifier.Notify(email);
-            return Ok("Email sent");
+            return Ok();
         }
         catch (EmailNotificationException exception)
         {
@@ -48,9 +40,19 @@ public class BudgetController : ControllerBase
         }
     }
 
-    [HttpGet]
+    [HttpGet("currentmonth")]
     public async Task<IActionResult> GetCurrentMonthBudget()
     {
-        return Ok("budget");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userGuidId = userId is not null ? Guid.Parse(userId) : default;
+        try
+        {
+            var currentUserBudget = await _budgetService.GetCurrentUserBudget(userGuidId);
+            return Ok(currentUserBudget);
+        }
+        catch (Exception exception)
+        {
+            return BadRequest(exception.Message);
+        }
     }
 }
