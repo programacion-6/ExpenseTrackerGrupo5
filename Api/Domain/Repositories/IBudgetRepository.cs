@@ -2,5 +2,5 @@ namespace Api.Domain;
 
 public interface IBudgetRepository : IRepository<Budget>
 {
-    Budget GetUserBudgetByMonth(Guid userId, DateTime month);
+    public Task<Budget?> GetUserBudgetByMonth(Guid userId, DateTime month);
 }

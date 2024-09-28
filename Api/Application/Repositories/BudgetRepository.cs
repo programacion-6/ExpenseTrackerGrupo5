@@ -1,7 +1,8 @@
-
 using System.Data;
 
 using Api.Domain;
+
+using Dapper;
 
 namespace Api.Application;
 
@@ -14,34 +15,107 @@ public class BudgetRepository : IBudgetRepository
         _connection = connection;
     }
 
-    public Task<bool> Delete(Budget item)
+    public async Task<bool> Save(Budget budget)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var query = @"
+                INSERT INTO budgets (id, user_id, month, currency, amount, current_amount) 
+                VALUES (@Id, @UserId, @Month, @Currency, @Amount, @CurrentAmount)";
+
+            await _connection.ExecuteAsync(query, budget);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    public Task<List<Budget>> GetAll()
+    public async Task<bool> Update(Budget budget)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var query = @"
+                UPDATE budgets 
+                SET user_id = @UserId, month = @Month, currency = @Currency, amount = @Amount, current_amount = @CurrentAmount
+                WHERE id = @Id";
+
+            await _connection.ExecuteAsync(query, budget);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    public Task<Budget?> GetById(Guid itemId)
+    public async Task<bool> Delete(Budget budget)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var query = "DELETE FROM budgets WHERE id = @Id";
+            var affectedRows = await _connection.ExecuteAsync(query, new { Id = budget.Id });
+            return affectedRows > 0;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    public Budget GetUserBudgetByMonth(Guid userId, DateTime month)
+    public async Task<List<Budget>> GetAll()
     {
-        throw new NotImplementedException();
+        var query = @"
+            SELECT 
+                id AS Id, 
+                user_id AS UserId, 
+                month AS Month, 
+                currency AS Currency, 
+                amount AS Amount, 
+                current_amount AS CurrentAmount 
+            FROM budgets";
+
+        var budgets = await _connection.QueryAsync<Budget>(query);
+        return budgets.ToList();
     }
 
-    public Task<bool> Save(Budget item)
+    public async Task<Budget?> GetById(Guid budgetId)
     {
-        throw new NotImplementedException();
+        var query = @"
+            SELECT 
+                id AS Id, 
+                user_id AS UserId, 
+                month AS Month, 
+                currency AS Currency, 
+                amount AS Amount, 
+                current_amount AS CurrentAmount 
+            FROM budgets 
+            WHERE id = @Id";
+
+        return await _connection.QueryFirstOrDefaultAsync<Budget>(query, new { Id = budgetId });
     }
 
-    public Task<bool> Update(Budget item)
+    public async Task<Budget?> GetUserBudgetByMonth(Guid userId, DateTime month)
     {
-        throw new NotImplementedException();
+        var query = @"
+        SELECT 
+            id AS Id, 
+            user_id AS UserId, 
+            month AS Month, 
+            currency AS Currency, 
+            amount AS Amount, 
+            current_amount AS CurrentAmount 
+        FROM budgets 
+        WHERE user_id = @UserId 
+        AND EXTRACT(MONTH FROM month) = @Month 
+        AND EXTRACT(YEAR FROM month) = @Year";
+
+        return await _connection.QueryFirstOrDefaultAsync<Budget>(
+            query,
+            new { UserId = userId, Month = month.Month, Year = month.Year }
+        );
     }
+
 
 }
