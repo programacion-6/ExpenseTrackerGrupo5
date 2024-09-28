@@ -48,9 +48,8 @@ public class BudgetService : IBudgetService
 
         if (currentUserBudget is not null)
         {
-            currentUserBudget.Amount = budget.Amount;
-            currentUserBudget.CurrentAmount += budget.Amount;
-            var wasUpdated = await _budgetRepository.Update(currentUserBudget);
+            var newBudget = SetNewBudgetAmount(currentUserBudget, budget);
+            var wasUpdated = await _budgetRepository.Update(newBudget);
             if (!wasUpdated)
             {
                 throw new Exception("An error occurred while updatading the budget");
@@ -64,6 +63,24 @@ public class BudgetService : IBudgetService
                 throw new Exception("An error occurred while saving the budget");
             }
         }
+    }
+
+    private Budget SetNewBudgetAmount(Budget oldBudget, Budget newBudget)
+    {
+        var hadBudget = oldBudget.Amount != 0;
+        if (hadBudget)
+        {
+            var amountDifference = newBudget.Amount - oldBudget.Amount;
+            oldBudget.CurrentAmount += amountDifference;
+        }
+        else
+        {
+            oldBudget.CurrentAmount += newBudget.Amount;
+        }
+
+        oldBudget.Amount = newBudget.Amount;
+
+        return oldBudget;
     }
 
     public async Task<Budget> GetCurrentUserBudget(Guid userId)
