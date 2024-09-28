@@ -44,9 +44,14 @@ public class BudgetController : ControllerBase
     public async Task<IActionResult> GetCurrentMonthBudget()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userGuidId = userId is not null ? Guid.Parse(userId) : default;
+        if (userId is null)
+        {
+            return BadRequest("user not found");
+        }
+
         try
         {
+            var userGuidId = Guid.Parse(userId);
             var currentUserBudget = await _budgetService.GetCurrentUserBudget(userGuidId);
             return Ok(currentUserBudget);
         }

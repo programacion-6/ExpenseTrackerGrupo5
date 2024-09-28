@@ -11,7 +11,7 @@ public class BudgetService : IBudgetService
         _budgetRepository = budgetRepository;
     }
 
-    public async Task AddEmptyMonthlyUserBudget(Guid userId)
+    public async Task<Budget> AddEmptyMonthlyUserBudget(Guid userId)
     {
         var currentUserBudget = await GetCurrentUserBudget(userId);
         if (currentUserBudget is null)
@@ -26,7 +26,10 @@ public class BudgetService : IBudgetService
             };
 
             await AddUserBudget(emptyUserBudget);
+            return emptyUserBudget;
         }
+
+        return currentUserBudget;
     }
 
 
@@ -46,7 +49,7 @@ public class BudgetService : IBudgetService
             throw new BudgetException("Budget not found");
         }
 
-        var budgetFound = await GetCurrentUserBudget(userId);
+        var budgetFound = await GetCurrentUserBudget(userId.Value);
         if (budgetFound is null)
         {
             throw new BudgetException("Budget not found");
@@ -64,17 +67,13 @@ public class BudgetService : IBudgetService
         }
     }
 
-    public async Task<Budget?> GetCurrentUserBudget(Guid? userId)
+    public async Task<Budget> GetCurrentUserBudget(Guid userId)
     {
-        if (userId.HasValue)
-        {
-            var currentMonth = DateTime.Today;
-            var currentUserBudget = await _budgetRepository.GetUserBudgetByMonth(userId.Value, currentMonth);
-
-            return currentUserBudget;
-        }
-
-        return default;
+        var currentMonth = DateTime.Today;
+        var currentUserBudget = await _budgetRepository.GetUserBudgetByMonth(userId, currentMonth);
+        return currentUserBudget is null
+            ? await AddEmptyMonthlyUserBudget(userId)
+            : currentUserBudget;
     }
 
 
