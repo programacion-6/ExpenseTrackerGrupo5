@@ -13,7 +13,8 @@ public class BudgetService : IBudgetService
 
     public async Task<Budget> AddEmptyMonthlyUserBudget(Guid userId)
     {
-        var currentUserBudget = await GetCurrentUserBudget(userId);
+        var currentMonth = DateTime.Today;
+        var currentUserBudget = await _budgetRepository.GetUserBudgetByMonth(userId, currentMonth);
         if (currentUserBudget is null)
         {
             var emptyUserBudget = new Budget()
@@ -25,20 +26,41 @@ public class BudgetService : IBudgetService
                 Month = DateTime.Today
             };
 
-            await AddUserBudget(emptyUserBudget);
-            return emptyUserBudget;
+            var wasSaved = await _budgetRepository.Save(emptyUserBudget);
+
+            return !wasSaved
+                ? throw new Exception("An error occurred while saving the budget")
+                : emptyUserBudget;
         }
 
         return currentUserBudget;
     }
 
-
-    public async Task AddUserBudget(Budget budget)
+    public async Task AddMonthlyUserBudget(Budget budget)
     {
-        var wasSaved = await _budgetRepository.Save(budget);
-        if (!wasSaved)
+        var currentMonth = DateTime.Today;
+        var currentUserBudget = await _budgetRepository.GetUserBudgetByMonth(budget.UserId, currentMonth);
+
+        if (currentUserBudget is not null && currentUserBudget.UserId != budget.UserId)
         {
-            throw new Exception("An error occurred while saving the budget");
+            throw new UserBudgetException("Permission denied");
+        }
+
+        if (currentUserBudget is not null)
+        {
+            currentUserBudget.Amount = budget.Amount;
+            currentUserBudget.CurrentAmount += budget.Amount;
+            var wasUpdated = await _budgetRepository.Update(currentUserBudget);
+            if (!wasUpdated)
+            {
+                throw new Exception("An error occurred while updatading the budget");
+            }
+        } else {
+            var wasSaved = await _budgetRepository.Save(budget);
+            if (!wasSaved)
+            {
+                throw new Exception("An error occurred while saving the budget");
+            }
         }
     }
 
@@ -91,21 +113,10 @@ public class BudgetService : IBudgetService
 
     public async Task UpdateUserBudget(Budget budget)
     {
-        var budgetFound = await _budgetRepository.GetById(budget.Id);
-        if (budgetFound is null)
+        var wasUpdated = await _budgetRepository.Update(budget);
+        if (!wasUpdated)
         {
-            throw new BudgetException("Budget not found");
-        }
-
-        if (budgetFound.UserId != budget.UserId)
-        {
-            throw new UserBudgetException("Permission denied");
-        }
-
-        var wasDeleted = await _budgetRepository.Update(budgetFound);
-        if (!wasDeleted)
-        {
-            throw new Exception("An error occurred while deleting the budget");
+            throw new Exception("Budget not found");
         }
     }
 }
