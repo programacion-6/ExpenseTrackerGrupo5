@@ -64,31 +64,6 @@ public class BudgetService : IBudgetService
         }
     }
 
-    public async Task DeleteCurrentUserBudget(Guid? userId)
-    {
-        if (!userId.HasValue)
-        {
-            throw new BudgetException("Budget not found");
-        }
-
-        var budgetFound = await GetCurrentUserBudget(userId.Value);
-        if (budgetFound is null)
-        {
-            throw new BudgetException("Budget not found");
-        }
-
-        if (budgetFound.UserId != userId)
-        {
-            throw new UserBudgetException("Permission denied");
-        }
-
-        var wasDeleted = await _budgetRepository.Delete(budgetFound);
-        if (!wasDeleted)
-        {
-            throw new Exception("An error occurred while deleting the budget");
-        }
-    }
-
     public async Task<Budget> GetCurrentUserBudget(Guid userId)
     {
         var currentMonth = DateTime.Today;
