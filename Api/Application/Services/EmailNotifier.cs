@@ -20,10 +20,10 @@ public class EmailNotifier : INotifier<EmailContent>
         ConfigSmtpServer(configuration);
     }
 
-    public void Notify(EmailContent emailContent)
+    public async Task Notify(EmailContent emailContent)
     {
         var email = BuildEmail(emailContent);
-        SendEmailFromSmtpServer(email);
+        await SendEmailFromSmtpServer(email);
     }
 
     private MimeMessage BuildEmail(EmailContent emailContent)
@@ -45,13 +45,13 @@ public class EmailNotifier : INotifier<EmailContent>
         return email;
     }
 
-    private void SendEmailFromSmtpServer(MimeMessage email)
+    private async Task SendEmailFromSmtpServer(MimeMessage email)
     {
         using var smtp = new SmtpClient();
         smtp.Connect(_smtpServer, _smtpPort, SecureSocketOptions.StartTls);
         smtp.Authenticate(_smtpUser, _smtpPassword);
-        smtp.Send(email);
-        smtp.Disconnect(true);
+        await smtp.SendAsync(email);
+        await smtp.DisconnectAsync(true);
     }
 
     private void ConfigSmtpServer(IConfiguration configuration)
