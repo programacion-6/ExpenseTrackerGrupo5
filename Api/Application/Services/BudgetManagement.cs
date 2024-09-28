@@ -17,20 +17,36 @@ public class BudgetManagement
     {
         var currentBudget = await _budgetService.GetCurrentUserBudget(income.UserId);
         currentBudget.CurrentAmount += income.Amount;
-        await TrackBudget(currentBudget, userEmail);
+        await AlertBudgetTrackingUser(currentBudget, userEmail);
     }
 
-    private async Task TrackBudget(Budget budget, string userEmail)
+    public async Task ProcessDeleteIncome(Income income)
     {
-        await _budgetService.UpdateUserBudget(budget);
-        var budgetTracker = new BudgetTracker(_notifier, userEmail);
-        await budgetTracker.Track(budget);
+        var currentBudget = await _budgetService.GetCurrentUserBudget(income.UserId);
+        currentBudget.CurrentAmount -= income.Amount;
+        await _budgetService.UpdateUserBudget(currentBudget);
     }
 
     public async Task ProcessNewExpense(Expense expense, string userEmail)
     {
         var currentBudget = await _budgetService.GetCurrentUserBudget(expense.UserId);
         currentBudget.CurrentAmount -= expense.Amount;
-        await TrackBudget(currentBudget, userEmail);
+        await AlertBudgetTrackingUser(currentBudget, userEmail);
     }
+
+    public async Task ProcessDeleteExpense(Expense expense)
+    {
+        var currentBudget = await _budgetService.GetCurrentUserBudget(expense.UserId);
+        currentBudget.CurrentAmount += expense.Amount;
+        await _budgetService.UpdateUserBudget(currentBudget);
+    }
+
+    private async Task AlertBudgetTrackingUser(Budget budget, string userEmail)
+    {
+        await _budgetService.UpdateUserBudget(budget);
+        var budgetTracker = new BudgetTracker(_notifier, userEmail);
+        await budgetTracker.Track(budget);
+    }
+
+
 }

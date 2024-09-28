@@ -29,20 +29,23 @@ public class BudgetController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
-        if (userEmail is null)
+        if (userId is null || userEmail is null)
         {
             return BadRequest("User not found");
         }
 
-        var newBudget = _mapper.Map<Budget>(createBudgetRequest);
 
+        var newBudget = _mapper.Map<Budget>(createBudgetRequest);
+        
         try
         {
+            newBudget.UserId = Guid.Parse(userId);
             await _budgetService.AddMonthlyUserBudget(newBudget);
-            return Ok();
+            return Ok("Established monthly budget");
         }
         catch (BudgetException exception)
         {

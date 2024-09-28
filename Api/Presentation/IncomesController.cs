@@ -33,7 +33,8 @@ public class IncomesController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
-        if (userId is null || userEmail is null) {
+        if (userId is null || userEmail is null)
+        {
             return BadRequest("User not found");
         }
 
@@ -50,14 +51,6 @@ public class IncomesController : ControllerBase
         try
         {
             await _budgetManagement.ProcessNewIncome(income, userEmail);
-        }
-        catch (UserBudgetException exception)
-        {
-            return StatusCode(400, $"{exception.Message}");
-        }
-        catch (BudgetException exception)
-        {
-            return StatusCode(400, $"{exception.Message}");
         }
         catch (Exception exception)
         {
@@ -129,18 +122,36 @@ public class IncomesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
         var income = await _incomeService.GetByIdAsync(id);
-        if (income == null || income.UserId != userId)
+        if (income == null || income.UserId != Guid.Parse(userId))
         {
             return NotFound("Income not found or you do not have permission to delete this income.");
         }
         var result = await _incomeService.DeleteAsync(id);
-        if (result)
+
+        if (!result)
         {
-            return Ok("Income deleted successfully.");
+            return StatusCode(500, "Error deleting income.");
         }
-        return StatusCode(500, "Error deleting income.");
+
+        try
+        {
+            await _budgetManagement.ProcessDeleteIncome(income);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, $"Internal server error: {exception.Message}");
+        }
+
+        return Ok("Income deleted successfully.");
     }
 
 }

@@ -55,7 +55,9 @@ public class BudgetService : IBudgetService
             {
                 throw new Exception("An error occurred while updatading the budget");
             }
-        } else {
+        }
+        else
+        {
             var wasSaved = await _budgetRepository.Save(budget);
             if (!wasSaved)
             {
