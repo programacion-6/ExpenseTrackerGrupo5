@@ -35,7 +35,7 @@ public class BudgetController : ControllerBase
             var subjectEmail = "Subject prove";
             var subjectBody = $"Body prove {createBudgetRequest.Currency}";
             var email = new EmailContent(userEmail, subjectEmail, subjectBody);
-            _emailNotifier.Notify(email);
+            await _emailNotifier.Notify(email);
             return Ok("Email sent");
         }
         catch (EmailNotificationException exception)
