@@ -45,7 +45,6 @@ public class MappingProfile : Profile
     private void CreateMappingForBudgets()
     {
         CreateMap<CreateBudgetRequest, Budget>();
-        CreateMap<UpdateBudgetRequest, Budget>();
         CreateMap<Budget, BudgetResponse>();
     }
 
