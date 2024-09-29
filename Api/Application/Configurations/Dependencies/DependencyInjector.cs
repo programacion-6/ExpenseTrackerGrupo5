@@ -22,8 +22,8 @@ public static class DependencyInjector
     private static void InjectServices(IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<INotifier<EmailContent>, EmailNotifier>();
         services.AddScoped<IIncomeService, IncomeService>();
-
     }
 
     private static void InjectUtilsHandlers(IServiceCollection services)
