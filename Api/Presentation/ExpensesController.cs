@@ -1,14 +1,12 @@
+using System.Security.Claims;
+
 using Api.Domain;
-
+using Api.Domain.Services;
 using AutoMapper;
-
-using Microsoft.AspNetCore.Authorization;
-
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/expenses")]
-[Authorize]
 public class ExpensesController : ControllerBase
 {
     private readonly IMapper _mapper;
@@ -25,6 +23,7 @@ public class ExpensesController : ControllerBase
     {
         try
         {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (createExpenseRequest == null)
                 return BadRequest("Invalid expense request.");
 
@@ -82,6 +81,7 @@ public class ExpensesController : ControllerBase
     {
         try
         {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (updateExpenseRequest == null)
                 return BadRequest("Invalid expense request.");
 
@@ -109,6 +109,7 @@ public class ExpensesController : ControllerBase
     {
         try
         {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var existingExpense = await _expenseService.GetByIdAsync(id);
             if (existingExpense == null)
                 return NotFound();
@@ -140,7 +141,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpPost("filter/category")]
-    public async Task<IActionResult> GetExpensesByCategory(string category)
+    public async Task<IActionResult> GetExpensesByCategory([FromBody] CategoryFilterRequest categoryFilterRequest)
     {
         try
         {
