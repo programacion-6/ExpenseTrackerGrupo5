@@ -4,7 +4,8 @@ namespace Api.Application;
 
 public class BudgetIncreaseTracker : BaseTrackerChain<Budget>
 {
-    private const decimal IncresePercentage = 0.50m;
+    private const int Percentage = 50;
+    private const decimal PercentageAsDecimal = 1.5m;
     private readonly string _userEmail;
     private readonly INotifier<EmailContent> _notifier;
 
@@ -18,8 +19,7 @@ public class BudgetIncreaseTracker : BaseTrackerChain<Budget>
     {
         if (IsIncreased(budget))
         {
-            var percent = IncresePercentage * 100;
-            var email = EmailTemplateGenerator.GetBudgetIncreaseEmail(_userEmail, percent);
+            var email = EmailTemplateGenerator.GetBudgetIncreaseEmail(_userEmail, Percentage);
             await _notifier.Notify(email);
         }
         else
@@ -37,7 +37,6 @@ public class BudgetIncreaseTracker : BaseTrackerChain<Budget>
             return false;
         }
 
-        var basePercent = budget.Amount * IncresePercentage;
-        return budget.CurrentAmount >= basePercent;
+        return budget.CurrentAmount >= (budget.Amount * PercentageAsDecimal);
     }
 }

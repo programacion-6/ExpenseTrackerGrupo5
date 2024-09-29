@@ -1,4 +1,3 @@
-
 using Api.Domain;
 
 namespace Api.Application;
@@ -22,7 +21,7 @@ public class TrackingNotifierChainClient
 
         try
         {
-            Task.Run(async () => await increaseTracker.NotifyTracking(budget));
+            Task.Run(async () => await decreaseTracker.NotifyTracking(budget));
         }
         catch (Exception exception)
         {
