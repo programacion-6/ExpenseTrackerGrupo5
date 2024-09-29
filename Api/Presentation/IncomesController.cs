@@ -66,6 +66,11 @@ public class IncomesController : ControllerBase
     public async Task<IActionResult> GetAllIncomes()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return BadRequest("User not found");
+        }
+
         var incomes = await _incomeService.GetIncomesByUserIdAsync(Guid.Parse(userId));
 
         if (incomes == null || !incomes.Any())
@@ -81,6 +86,10 @@ public class IncomesController : ControllerBase
     public async Task<IActionResult> GetIncomeById(Guid id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return BadRequest("User not found");
+        }
 
         var income = await _incomeService.GetByIdAsync(id);
 
@@ -96,36 +105,48 @@ public class IncomesController : ControllerBase
     public async Task<IActionResult> UpdateIncome(Guid id, [FromBody] UpdateIncomeRequest updateIncomeRequest)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
-        var income = await _incomeService.GetByIdAsync(id);
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
 
-        if (income == null || income.UserId != Guid.Parse(userId))
+        var oldIncome = await _incomeService.GetByIdAsync(id);
+
+        if (oldIncome == null || oldIncome.UserId != Guid.Parse(userId))
         {
             return NotFound("Income not found or you do not have permission to update this income.");
         }
 
-        income.Currency = updateIncomeRequest.Currency;
-        income.Source = updateIncomeRequest.Source;
-        income.Amount = updateIncomeRequest.Amount;
-        income.Date = updateIncomeRequest.Date;
+        var newIncome = _mapper.Map<Income>(updateIncomeRequest);
+        newIncome.Id = oldIncome.Id;
+        newIncome.UserId = oldIncome.UserId;
 
-        var result = await _incomeService.UpdateAsync(income);
+        var result = await _incomeService.UpdateAsync(newIncome);
 
-        if (result)
+        if (!result)
         {
-            return Ok("Income updated successfully.");
+            return StatusCode(500, "Error updating income.");
         }
 
-        return StatusCode(500, "Error updating income.");
+        try
+        {
+            await _budgetManagement.ProcessUpdatedIncome(oldIncome, newIncome);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, $"Internal server error: {exception.Message}");
+        }
+
+        return Ok("Income updated successfully.");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userEmail = User.FindFirstValue(ClaimTypes.Email);
-
-        if (userId is null || userEmail is null)
+        if (userId is null)
         {
             return BadRequest("User not found");
         }

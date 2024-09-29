@@ -27,6 +27,14 @@ public class BudgetManagement
         await _budgetService.UpdateUserBudget(currentBudget);
     }
 
+    public async Task ProcessUpdatedIncome(Income oldIncome, Income newIncome)
+    {
+        var currentBudget = await _budgetService.GetCurrentUserBudget(oldIncome.UserId);
+        currentBudget.CurrentAmount -= oldIncome.Amount;
+        currentBudget.CurrentAmount += newIncome.Amount;
+        await _budgetService.UpdateUserBudget(currentBudget);
+    }
+
     public async Task ProcessNewExpense(Expense expense, string userEmail)
     {
         var currentBudget = await _budgetService.GetCurrentUserBudget(expense.UserId);
@@ -38,6 +46,14 @@ public class BudgetManagement
     {
         var currentBudget = await _budgetService.GetCurrentUserBudget(expense.UserId);
         currentBudget.CurrentAmount += expense.Amount;
+        await _budgetService.UpdateUserBudget(currentBudget);
+    }
+
+    public async Task ProcessUpdatedExpense(Expense oldExpense, Expense newExpense)
+    {
+        var currentBudget = await _budgetService.GetCurrentUserBudget(oldExpense.UserId);
+        currentBudget.CurrentAmount += oldExpense.Amount;
+        currentBudget.CurrentAmount -= newExpense.Amount;
         await _budgetService.UpdateUserBudget(currentBudget);
     }
 
