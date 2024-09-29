@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Api.Domain.Services;
-using Api.Application;
 
 [ApiController]
 [Route("api/incomes")]
@@ -18,13 +17,13 @@ public class IncomesController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IIncomeService _incomeService;
-    private readonly BudgetManagement _budgetManagement;
+    private readonly ITracker<Income, Budget> _tracker;
 
-    public IncomesController(IIncomeService incomeService, IMapper mapper, BudgetManagement budgetManagement)
+    public IncomesController(IIncomeService incomeService, IMapper mapper, ITracker<Income, Budget> tracker)
     {
         _incomeService = incomeService;
         _mapper = mapper;
-        _budgetManagement = budgetManagement;
+        _tracker = tracker;
     }
 
     [HttpPost]
@@ -50,11 +49,11 @@ public class IncomesController : ControllerBase
 
         try
         {
-            await _budgetManagement.ProcessNewIncome(income, userEmail);
+            await _tracker.TrackNewUserEntry(income, userEmail);
         }
         catch (Exception exception)
         {
-            return StatusCode(500, $"Internal server error: {exception.Message}");
+            return StatusCode(400, $"{exception.Message}");
         }
 
         return Ok($"Income logged successfully");
@@ -132,11 +131,11 @@ public class IncomesController : ControllerBase
 
         try
         {
-            await _budgetManagement.ProcessUpdatedIncome(oldIncome, newIncome);
+            await _tracker.TrackUpdatedUserEntry(oldIncome, newIncome, userEmail);
         }
         catch (Exception exception)
         {
-            return StatusCode(500, $"Internal server error: {exception.Message}");
+            return StatusCode(400, $"{exception.Message}");
         }
 
         return Ok("Income updated successfully.");
@@ -146,7 +145,9 @@ public class IncomesController : ControllerBase
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
         {
             return BadRequest("User not found");
         }
@@ -165,11 +166,11 @@ public class IncomesController : ControllerBase
 
         try
         {
-            await _budgetManagement.ProcessDeleteIncome(income);
+            await _tracker.TrackDeletedUserEntry(income, userEmail);
         }
         catch (Exception exception)
         {
-            return StatusCode(500, $"Internal server error: {exception.Message}");
+            return StatusCode(400, $"{exception.Message}");
         }
 
         return Ok("Income deleted successfully.");

@@ -26,7 +26,8 @@ public static class DependencyInjector
         services.AddScoped<INotifier<EmailContent>, EmailNotifier>();
         services.AddScoped<IIncomeService, IncomeService>();
         services.AddScoped<IBudgetService, BudgetService>();
-        services.AddScoped<BudgetManagement>();
+        services.AddScoped<ITracker<Income, Budget>, IncomeTrackerForBudget>();
+        services.AddScoped<ITracker<Expense, Budget>, ExpenseTrackerForBudget>();
     }
 
     private static void InjectUtilsHandlers(IServiceCollection services)

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 using Api.Domain;
 
 using AutoMapper;
@@ -12,10 +14,12 @@ using Microsoft.AspNetCore.Mvc;
 public class ExpensesController : ControllerBase
 {
     private readonly IMapper _mapper;
+    private readonly ITracker<Expense, Budget> _tracker;
 
-    public ExpensesController(IMapper mapper)
+    public ExpensesController(IMapper mapper, ITracker<Expense, Budget> tracker)
     {
         _mapper = mapper;
+        _tracker = tracker;
     }
 
     [HttpGet]
@@ -33,18 +37,77 @@ public class ExpensesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateExpense(Guid id, [FromBody] UpdateExpenseRequest updateExpenseRequest)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
+        var oldExpense = new Expense();
+        var newExpense = _mapper.Map<Expense>(updateExpenseRequest);
+
+        try
+        {
+            await _tracker.TrackUpdatedUserEntry(oldExpense, newExpense, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
         return Ok("Expense updated successfully.");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteExpense(Guid id)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
+        var expense = new Expense();
+
+        try
+        {
+            await _tracker.TrackDeletedUserEntry(expense, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
         return Ok("Expense deleted successfully.");
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequest createExpenseRequest)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
+        var expense = _mapper.Map<Expense>(createExpenseRequest);
+        expense.UserId = Guid.Parse(userId);
+
+        try
+        {
+            await _tracker.TrackNewUserEntry(expense, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
         return Ok("Expense created successfully.");
     }
 
