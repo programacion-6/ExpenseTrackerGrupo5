@@ -38,13 +38,13 @@ public class ExpenseRepository : IExpenseRepository
         return result > 0;
     }
 
-    public Expense GetById(Guid id)
+    public async Task<Expense?> GetById(Guid id)
     {
         var query = "SELECT * FROM expenses WHERE id = @Id";
         return _dbConnection.QuerySingleOrDefault<Expense>(query, new { Id = id });
     }
 
-    public List<Expense> GetAll()
+    public async Task<List<Expense>> GetAll()
     {
         var query = "SELECT * FROM expenses";
         return _dbConnection.Query<Expense>(query).AsList();

@@ -2,9 +2,9 @@ namespace Api.Domain;
 
 public interface IRepository<T> where T : IEntityBase
 {
-    Task<bool> Save (T item);
-    Task<bool> Delete (T item);
-    Task<bool> Update (T item);
-    T GetById (Guid itemId);
-    List<T> GetAll();
+    public Task<bool> Save(T item);
+    public Task<bool> Delete(T item);
+    public Task<bool> Update(T item);
+    public Task<T?> GetById(Guid itemId);
+    public Task<List<T>> GetAll();
 }

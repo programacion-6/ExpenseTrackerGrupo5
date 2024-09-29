@@ -22,15 +22,15 @@ public class ExpenseService : IExpenseService
     public async Task<bool> DeleteAsync(Guid id)
     {
         var expense = _expenseRepository.GetById(id);
-        return await _expenseRepository.Delete(expense);
+        return await _expenseRepository.Delete(await expense);
     }
 
     public async Task<Expense> GetByIdAsync(Guid id)
     {
-        return _expenseRepository.GetById(id);
+        return await _expenseRepository.GetById(id);
     }
 
-    public async Task<IEnumerable<Expense>> GetAllAsync()
+    public async Task<Task<List<Expense>>> GetAllAsync()
     {
         return _expenseRepository.GetAll();
     }
