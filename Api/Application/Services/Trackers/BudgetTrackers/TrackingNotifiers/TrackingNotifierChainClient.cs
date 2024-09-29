@@ -3,18 +3,18 @@ using Api.Domain;
 
 namespace Api.Application;
 
-public class BudgetTracker : ITracker<Budget>
+public class TrackingNotifierChainClient
 {
     private readonly string _userEmail;
     private readonly INotifier<EmailContent> _notifier;
 
-    public BudgetTracker(INotifier<EmailContent> notifier, string userEmail)
+    public TrackingNotifierChainClient(INotifier<EmailContent> notifier, string userEmail)
     {
         _notifier = notifier;
         _userEmail = userEmail;
     }
 
-    public async Task Track(Budget budget)
+    public async Task Handle(Budget budget)
     {
         var increaseTracker = new BudgetIncreaseTracker(_notifier, _userEmail);
         var decreaseTracker = new BudgetDecreaseTracker(_notifier, _userEmail);
@@ -22,7 +22,7 @@ public class BudgetTracker : ITracker<Budget>
 
         try
         {
-            await increaseTracker.Handle(budget);
+            await increaseTracker.NotifyTracking(budget);
         }
         catch (Exception exception)
         {

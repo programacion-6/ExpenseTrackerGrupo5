@@ -14,7 +14,7 @@ public class BudgetDecreaseTracker : BaseTrackerChain<Budget>
         _userEmail = userEmail;
     }
 
-    public override async Task Handle(Budget budget)
+    public override async Task NotifyTracking(Budget budget)
     {
         if (IsDecresed(budget))
         {
@@ -24,7 +24,7 @@ public class BudgetDecreaseTracker : BaseTrackerChain<Budget>
         }
         else
         {
-            await base.Handle(budget);
+            await base.NotifyTracking(budget);
         }
     }
 
@@ -35,7 +35,6 @@ public class BudgetDecreaseTracker : BaseTrackerChain<Budget>
         {
             return false;
         }
-
 
         var basePercent = budget.Amount * IncresePercentage;
 

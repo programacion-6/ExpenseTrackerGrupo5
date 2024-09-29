@@ -14,7 +14,7 @@ public class BudgetIncreaseTracker : BaseTrackerChain<Budget>
         _userEmail = userEmail;
     }
 
-    public override async Task Handle(Budget budget)
+    public override async Task NotifyTracking(Budget budget)
     {
         if (IsIncreased(budget))
         {
@@ -24,7 +24,7 @@ public class BudgetIncreaseTracker : BaseTrackerChain<Budget>
         }
         else
         {
-            await base.Handle(budget);
+            await base.NotifyTracking(budget);
         }
     }
 
