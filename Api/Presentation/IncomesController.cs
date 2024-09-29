@@ -77,7 +77,9 @@ public class IncomesController : ControllerBase
             return NotFound("No incomes found for the current user.");
         }
 
-        return Ok(incomes);
+        var incomesResponse = _mapper.Map<IncomeResponse[]>(incomes);
+
+        return Ok(incomesResponse);
     }
 
 
@@ -97,7 +99,9 @@ public class IncomesController : ControllerBase
             return NotFound("Income not found or you do not have permission to access this income.");
         }
 
-        return Ok(income);
+        var incomeResponse = _mapper.Map<IncomeResponse>(income);
+
+        return Ok(incomeResponse);
     }
 
     [HttpPut("{id}")]

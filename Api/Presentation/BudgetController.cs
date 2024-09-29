@@ -83,7 +83,8 @@ public class BudgetController : ControllerBase
         {
             var userGuidId = Guid.Parse(userId);
             var currentUserBudget = await _budgetService.GetCurrentUserBudget(userGuidId);
-            return Ok(currentUserBudget);
+            var budgetResponse = _mapper.Map<BudgetResponse>(currentUserBudget);
+            return Ok(budgetResponse);
         }
         catch (Exception exception)
         {
