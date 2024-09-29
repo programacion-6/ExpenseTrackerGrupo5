@@ -14,7 +14,7 @@ public class TrackingNotifierChainClient
         _userEmail = userEmail;
     }
 
-    public async Task Handle(Budget budget)
+    public void Handle(Budget budget)
     {
         var increaseTracker = new BudgetIncreaseTracker(_notifier, _userEmail);
         var decreaseTracker = new BudgetDecreaseTracker(_notifier, _userEmail);
@@ -22,7 +22,7 @@ public class TrackingNotifierChainClient
 
         try
         {
-            await increaseTracker.NotifyTracking(budget);
+            Task.Run(async () => await increaseTracker.NotifyTracking(budget));
         }
         catch (Exception exception)
         {

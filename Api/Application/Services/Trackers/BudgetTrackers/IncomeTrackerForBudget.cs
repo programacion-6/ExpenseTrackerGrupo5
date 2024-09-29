@@ -40,7 +40,7 @@ public class IncomeTrackerForBudget : ITracker<Income, Budget>
     {
         await _budgetService.UpdateUserBudget(budget);
         var budgetTracker = new TrackingNotifierChainClient(_notifier, userEmail);
-        await budgetTracker.Handle(budget);
+        budgetTracker.Handle(budget);
     }
 
 }
