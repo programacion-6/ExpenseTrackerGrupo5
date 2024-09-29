@@ -4,6 +4,8 @@ using Api.Domain;
 
 using AutoMapper;
 
+using FluentValidation;
+
 using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +17,13 @@ public class BudgetController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IBudgetService _budgetService;
+    private readonly IValidator<Budget> _budgetValidator;
 
-    public BudgetController(IMapper mapper, IBudgetService budgetService)
+    public BudgetController(IMapper mapper, IBudgetService budgetService, IValidator<Budget> budgetValidator)
     {
         _mapper = mapper;
         _budgetService = budgetService;
+        _budgetValidator = budgetValidator;
     }
 
     [HttpPost]
@@ -29,7 +33,7 @@ public class BudgetController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
@@ -40,6 +44,11 @@ public class BudgetController : ControllerBase
 
 
         var newBudget = _mapper.Map<Budget>(createBudgetRequest);
+        var validationResult = await _budgetValidator.ValidateAsync(newBudget);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors);
+        }
         
         try
         {
