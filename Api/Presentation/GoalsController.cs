@@ -29,7 +29,7 @@ public class GoalsController : ControllerBase
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         var goal = _mapper.Map<Goal>(createGoalRequest);
-        goal.UserId = userId;
+        goal.user_id = userId;
 
         var result = await _goalService.CreateAsync(goal);
         if(result)

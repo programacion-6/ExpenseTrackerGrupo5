@@ -18,7 +18,7 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
         var result = await _dbConnection.ExecuteAsync(query, new
         {
             goal.Id,
-            goal.UserId,
+            UserId = goal.user_id,
             goal.Currency,
             goal.GoalAmount,
             goal.Deadline,
