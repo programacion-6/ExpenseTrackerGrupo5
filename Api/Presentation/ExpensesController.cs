@@ -68,12 +68,19 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
+            
+            if (expenseUserId == null)
+                return NotFound("Expense not found ");
+            Console.WriteLine("***************************");
+            Console.WriteLine(userId);
+            Console.WriteLine(expenseUserId);
+            Console.WriteLine("***************************");
+            if (expenseUserId.ToString() != userId)
+                return NotFound("You do not have permission to view this expense.");
+            
             var expense = await _expenseService.GetByIdAsync(id);
-
-            if (expense == null || expense.UserId != userId)
-                return NotFound("Expense not found or you do not have permission to view this expense.");
-
             return Ok(_mapper.Map<ExpenseResponse>(expense));
         }
         catch (Exception e)
@@ -166,4 +173,23 @@ public class ExpensesController : ControllerBase
             return StatusCode(500, $"Internal server error: {e.Message}");
         }
     }
+    
+    [HttpGet("user/{expenseId}")]
+    public async Task<IActionResult> GetUserIdByExpenseId(Guid expenseId)
+    {
+        try
+        {
+            var userId = await _expenseService.GetUserIdByExpenseId(expenseId);
+        
+            if (userId == null)
+                return NotFound("Expense not found");
+
+            return Ok(userId);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, $"Internal server error: {e.Message}");
+        }
+    }
+
 }

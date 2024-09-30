@@ -44,4 +44,9 @@ public class ExpenseService : IExpenseService
     {
         return _expenseRepository.GetUserExpenseByCategory(userId, category);
     }
+
+    public async Task<Guid?> GetUserIdByExpenseId(Guid expenseId)
+    {
+        return await _expenseRepository.GetUserIdByExpenseId(expenseId);
+    }
 }

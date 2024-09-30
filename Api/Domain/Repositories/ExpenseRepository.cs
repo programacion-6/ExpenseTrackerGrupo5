@@ -41,7 +41,7 @@ public class ExpenseRepository : IExpenseRepository
     public async Task<Expense?> GetById(Guid id)
     {
         var query = "SELECT * FROM expenses WHERE id = @Id";
-        return _dbConnection.QuerySingleOrDefault<Expense>(query, new { Id = id });
+        return await _dbConnection.QuerySingleOrDefaultAsync<Expense>(query, new { Id = id });
     }
 
     public async Task<List<Expense>> GetAll()
@@ -66,5 +66,11 @@ public class ExpenseRepository : IExpenseRepository
     {
         var query = "SELECT * FROM expenses WHERE user_id = @UserId";
         return _dbConnection.Query<Expense>(query, new { UserId = userId }).AsList();
+    }
+    
+    public async Task<Guid?> GetUserIdByExpenseId(Guid expenseId)
+    {
+        var query = "SELECT user_id FROM expenses WHERE id = @ExpenseId";
+        return await _dbConnection.QuerySingleOrDefaultAsync<Guid?>(query, new { ExpenseId = expenseId });
     }
 }
