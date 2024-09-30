@@ -1,7 +1,7 @@
 namespace Api.Domain;
 
 public record CreateGoalRequest(
-    decimal GoalAmount,
+    decimal goal_amount,
     DateTime Deadline,
     string Currency
 );

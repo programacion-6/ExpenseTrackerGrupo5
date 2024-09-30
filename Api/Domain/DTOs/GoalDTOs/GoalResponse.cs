@@ -4,7 +4,7 @@ public record GoalResponse(
     Guid Id,
     Guid UserId,
     string Currency,
-    decimal GoalAmount,
+    decimal goal_amount,
     decimal CurrentAmount,
     DateTime Deadline,
     DateTime CreatedAt
