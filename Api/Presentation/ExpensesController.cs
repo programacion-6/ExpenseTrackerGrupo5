@@ -87,12 +87,15 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
+            
+            if (expenseUserId == null)
+                return NotFound("Expense not found ");
+            if (expenseUserId.ToString() != userId)
+                return NotFound("You do not have permission to view this expense.");
+            
             var expense = await _expenseService.GetByIdAsync(id);
-
-            if (expense == null || expense.UserId != userId)
-                return NotFound("Expense not found or you do not have permission to view this expense.");
-
             return Ok(_mapper.Map<ExpenseResponse>(expense));
         }
         catch (Exception e)
@@ -113,23 +116,27 @@ public class ExpensesController : ControllerBase
             {
                 return BadRequest("User not found");
             }
+            
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
+            var expense = await _expenseService.GetByIdAsync(id);
+            
+            if (expense == null || expenseUserId != Guid.Parse(userId))
+                return NotFound("Income not found or you do not have permission to update this income."); 
 
-            var existingExpense = await _expenseService.GetByIdAsync(id);
-            if (existingExpense == null || existingExpense.UserId != Guid.Parse(userId))
-                return NotFound("Expense not found or you do not have permission to update this expense.");
-
-            var expenseToUpdate = _mapper.Map(updateExpenseRequest, existingExpense);
+            var expenseToUpdate = _mapper.Map<Expense>(updateExpenseRequest);
             expenseToUpdate.Id = id;
-
-            var success = await _expenseService.UpdateAsync(expenseToUpdate);
-            if (!success)
+            expenseToUpdate.UserId = Guid.Parse(userId);
+            
+            var result = await _expenseService.UpdateAsync(expenseToUpdate);
+            
+            if (!result)
             {
                 return StatusCode(500, "An error occurred while updating the expense.");
             }
             
             try
             {
-                await _tracker.TrackUpdatedUserEntry(existingExpense, expenseToUpdate, userEmail);
+                await _tracker.TrackUpdatedUserEntry(expense, expenseToUpdate, userEmail);
             }
             catch (Exception exception)
             {
@@ -137,7 +144,7 @@ public class ExpensesController : ControllerBase
             }
 
             return Ok("Expense updated successfully.");
-
+            
         }
         catch (Exception e)
         {
@@ -157,11 +164,15 @@ public class ExpensesController : ControllerBase
             {
                 return BadRequest("User not found");
             }
+
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
             var existingExpense = await _expenseService.GetByIdAsync(id);
 
-            if (existingExpense == null || existingExpense.UserId != Guid.Parse(userId))
-                return NotFound("Expense not found or you do not have permission to delete this expense.");
+            if (existingExpense == null)
+                return NotFound("Expense not found");
 
+            if (expenseUserId != Guid.Parse(userId))
+                return NotFound("You do not have permission to delete this expense.");
             var success = await _expenseService.DeleteAsync(id);
 
             if (!success)
@@ -222,4 +233,23 @@ public class ExpensesController : ControllerBase
             return StatusCode(500, $"Internal server error: {e.Message}");
         }
     }
+    
+    [HttpGet("user/{expenseId}")]
+    public async Task<IActionResult> GetUserIdByExpenseId(Guid expenseId)
+    {
+        try
+        {
+            var userId = await _expenseService.GetUserIdByExpenseId(expenseId);
+        
+            if (userId == null)
+                return NotFound("Expense not found");
+
+            return Ok(userId);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, $"Internal server error: {e.Message}");
+        }
+    }
+
 }

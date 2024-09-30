@@ -9,4 +9,5 @@ public interface IExpenseService
     Task<IEnumerable<Expense>> GetAllByUserAsync(Guid userId);
     Task<IEnumerable<Expense>> GetUserExpensesByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
     Task<IEnumerable<Expense>> GetUserExpensesByCategoryAsync(Guid userId, string category);
+    Task<Guid?> GetUserIdByExpenseId(Guid expenseId);
 }
