@@ -17,7 +17,7 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task<bool> Save(Expense expense)
     {
-        var query = "INSERT INTO expenses (id, user_id, currency, amount, description, category, date, created_at) " +
+        var query = "INSERT INTO expenses (id, userid, currency, amount, description, category, date, created_at) " +
                     "VALUES (@Id, @UserId, @Currency, @Amount, @Description, @Category, @Date, @CreatedAt)";
         var result = await _dbConnection.ExecuteAsync(query, expense);
         return result > 0;
@@ -32,7 +32,7 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task<bool> Update(Expense expense)
     {
-        var query = "UPDATE expenses SET user_id = @UserId, currency = @Currency, amount = @Amount, " +
+        var query = "UPDATE expenses SET userid = @UserId, currency = @Currency, amount = @Amount, " +
                     "description = @Description, category = @Category, date = @Date, created_at = @CreatedAt WHERE id = @Id";
         var result = await _dbConnection.ExecuteAsync(query, expense);
         return result > 0;
@@ -41,7 +41,7 @@ public class ExpenseRepository : IExpenseRepository
     public async Task<Expense?> GetById(Guid id)
     {
         var query = "SELECT * FROM expenses WHERE id = @Id";
-        return _dbConnection.QuerySingleOrDefault<Expense>(query, new { Id = id });
+        return await _dbConnection.QuerySingleOrDefaultAsync<Expense>(query, new { Id = id });
     }
 
     public async Task<List<Expense>> GetAll()
@@ -52,19 +52,25 @@ public class ExpenseRepository : IExpenseRepository
 
     public List<Expense> GetUserExpenseByDateRange(Guid userId, DateTime startDate, DateTime endDate)
     {
-        var query = "SELECT * FROM expenses WHERE user_id = @UserId AND date BETWEEN @StartDate AND @EndDate";
+        var query = "SELECT * FROM expenses WHERE userid = @UserId AND date BETWEEN @StartDate AND @EndDate";
         return _dbConnection.Query<Expense>(query, new { UserId = userId, StartDate = startDate, EndDate = endDate }).AsList();
     }
 
     public List<Expense> GetUserExpenseByCategory(Guid userId, string category)
     {
-        var query = "SELECT * FROM expenses WHERE user_id = @UserId AND category = @Category";
+        var query = "SELECT * FROM expenses WHERE userid = @UserId AND category = @Category";
         return _dbConnection.Query<Expense>(query, new { UserId = userId, Category = category }).AsList();
     }
     
     public async Task<List<Expense>> GetAllByUser(Guid userId)
     {
-        var query = "SELECT * FROM expenses WHERE user_id = @UserId";
+        var query = "SELECT * FROM expenses WHERE userid = @UserId";
         return _dbConnection.Query<Expense>(query, new { UserId = userId }).AsList();
+    }
+    
+    public async Task<Guid?> GetUserIdByExpenseId(Guid expenseId)
+    {
+        var query = "SELECT userid FROM expenses WHERE id = @ExpenseId";
+        return await _dbConnection.QuerySingleOrDefaultAsync<Guid?>(query, new { ExpenseId = expenseId });
     }
 }
