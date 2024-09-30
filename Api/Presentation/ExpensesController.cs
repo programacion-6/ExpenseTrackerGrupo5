@@ -122,16 +122,12 @@ public class ExpensesController : ControllerBase
             
             if (expense == null || expenseUserId != Guid.Parse(userId))
                 return NotFound("Income not found or you do not have permission to update this income."); 
-            
-            expense.Currency = updateExpenseRequest.Currency;
-            expense.Amount = updateExpenseRequest.Amount;
-            expense.Description = updateExpenseRequest.Description;
-            expense.Category = updateExpenseRequest.Category;
-            expense.Date = updateExpenseRequest.Date;
 
             var expenseToUpdate = _mapper.Map<Expense>(updateExpenseRequest);
+            expenseToUpdate.Id = id;
+            expenseToUpdate.UserId = Guid.Parse(userId);
             
-            var result = await _expenseService.UpdateAsync(expense);
+            var result = await _expenseService.UpdateAsync(expenseToUpdate);
             
             if (!result)
             {

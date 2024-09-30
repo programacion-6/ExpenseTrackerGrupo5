@@ -32,23 +32,24 @@ public class ExpenseTrackerForBudget : ITracker<Expense, Budget>
     {
         if (DateChecker.AreSameDate(oldExpense.Date, newExpense.Date))
         {
-            await TrackUpdatedIncomeWithSameDate(oldExpense, newExpense, userEmail);
+            await TrackUpdatedExpenseWithSameDate(oldExpense, newExpense, userEmail);
         }
         else
         {
-            await TrackUpdatedIncomeWithDifferentDate(oldExpense, newExpense, userEmail);
+            await TrackUpdatedExpenseWithDifferentDate(oldExpense, newExpense, userEmail);
         }
     }
 
-    private async Task TrackUpdatedIncomeWithSameDate(Expense oldExpense, Expense newExpense, string userEmail)
+    private async Task TrackUpdatedExpenseWithSameDate(Expense oldExpense, Expense newExpense, string userEmail)
     {
         var budget = await _budgetService.GetUserBudgetByMonthOrCreate(oldExpense.UserId, oldExpense.Date);
         budget.CurrentAmount += oldExpense.Amount;
         budget.CurrentAmount -= newExpense.Amount;
+
         await NotifyTrackingToUser(budget, userEmail);
     }
 
-    private async Task TrackUpdatedIncomeWithDifferentDate(Expense oldExpense, Expense newExpense, string userEmail)
+    private async Task TrackUpdatedExpenseWithDifferentDate(Expense oldExpense, Expense newExpense, string userEmail)
     {
         var oldBudget = await _budgetService.GetUserBudgetByMonthOrCreate(oldExpense.UserId, oldExpense.Date);
         var newBudget = await _budgetService.GetUserBudgetByMonthOrCreate(newExpense.UserId, newExpense.Date);
