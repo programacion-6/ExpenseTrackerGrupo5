@@ -1,7 +1,10 @@
 using System.Security.Claims;
+
 using Api.Domain;
 using Api.Domain.Services;
+
 using AutoMapper;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 public class ExpensesController : ControllerBase
 {
     private readonly IMapper _mapper;
+    private readonly ITracker<Expense, Budget> _tracker;
     private readonly IExpenseService _expenseService;
 
-    public ExpensesController(IMapper mapper, IExpenseService expenseService)
+    public ExpensesController(IMapper mapper, ITracker<Expense, Budget> tracker, IExpenseService expenseService)
     {
         _mapper = mapper;
+        _tracker = tracker;
         _expenseService = expenseService;
     }
 
@@ -24,21 +29,35 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (createExpenseRequest == null)
-                return BadRequest("Invalid expense request.");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+            if (userId is null || userEmail is null)
+            {
+                return BadRequest("User not found");
+            }
 
             var expense = _mapper.Map<Expense>(createExpenseRequest);
-            expense.UserId = userId;  // Asignar el UserId al gasto
-            expense.Id = Guid.NewGuid();
-            expense.CreatedAt = DateTime.UtcNow;
+            expense.UserId = Guid.Parse(userId);
 
             var success = await _expenseService.CreateAsync(expense);
 
-            if (success)
-                return CreatedAtAction(nameof(GetExpenseById), new { id = expense.Id }, _mapper.Map<ExpenseResponse>(expense));
+            if (!success)
+            {
+                return StatusCode(500, "An error occurred while creating the expense.");
+            }
 
-            return StatusCode(500, "An error occurred while creating the expense.");
+            try
+            {
+                await _tracker.TrackNewUserEntry(expense, userEmail);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(400, $"{exception.Message}");
+            }
+
+            return CreatedAtAction(nameof(GetExpenseById), new { id = expense.Id }, _mapper.Map<ExpenseResponse>(expense));
+
         }
         catch (Exception e)
         {
@@ -52,7 +71,7 @@ public class ExpensesController : ControllerBase
         try
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            
+
             var expenses = await _expenseService.GetAllByUserAsync(userId);
 
             return Ok(_mapper.Map<IEnumerable<ExpenseResponse>>(expenses));
@@ -91,24 +110,41 @@ public class ExpensesController : ControllerBase
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+            if (userId is null || userEmail is null)
+            {
+                return BadRequest("User not found");
+            }
+            
             var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
             var expense = await _expenseService.GetByIdAsync(id);
             
             if (expense == null || expenseUserId != Guid.Parse(userId))
                 return NotFound("Income not found or you do not have permission to update this income."); 
+
+            var expenseToUpdate = _mapper.Map<Expense>(updateExpenseRequest);
+            expenseToUpdate.Id = id;
+            expenseToUpdate.UserId = Guid.Parse(userId);
             
-            expense.Currency = updateExpenseRequest.Currency;
-            expense.Amount = updateExpenseRequest.Amount;
-            expense.Description = updateExpenseRequest.Description;
-            expense.Category = updateExpenseRequest.Category;
-            expense.Date = updateExpenseRequest.Date;
+            var result = await _expenseService.UpdateAsync(expenseToUpdate);
             
-            var result = await _expenseService.UpdateAsync(expense);
+            if (!result)
+            {
+                return StatusCode(500, "An error occurred while updating the expense.");
+            }
             
-            if (result)
-                return Ok("Expense updated successfully"); 
+            try
+            {
+                await _tracker.TrackUpdatedUserEntry(expense, expenseToUpdate, userEmail);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(400, $"{exception.Message}");
+            }
+
+            return Ok("Expense updated successfully.");
             
-            return StatusCode(500, "Error updating expense.");
         }
         catch (Exception e)
         {
@@ -121,20 +157,40 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+            if (userId is null || userEmail is null)
+            {
+                return BadRequest("User not found");
+            }
+
             var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
             var existingExpense = await _expenseService.GetByIdAsync(id);
 
             if (existingExpense == null)
                 return NotFound("Expense not found");
 
-            if (expenseUserId != userId)
+            if (expenseUserId != Guid.Parse(userId))
                 return NotFound("You do not have permission to delete this expense.");
             var success = await _expenseService.DeleteAsync(id);
-            if (success)
-                return Ok("Expense deleted successfully.");
 
-            return StatusCode(500, "An error occurred while deleting the expense.");
+            if (!success)
+            {
+                return StatusCode(500, "An error occurred while deleting the expense.");
+            }
+
+            try
+            {
+                await _tracker.TrackDeletedUserEntry(existingExpense, userEmail);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(400, $"{exception.Message}");
+            }
+
+            return Ok("Expense deleted successfully.");
+
         }
         catch (Exception e)
         {

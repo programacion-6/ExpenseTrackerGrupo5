@@ -17,29 +17,47 @@ public class IncomesController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IIncomeService _incomeService;
+    private readonly ITracker<Income, Budget> _tracker;
 
-    public IncomesController(IIncomeService incomeService, IMapper mapper)
+    public IncomesController(IIncomeService incomeService, IMapper mapper, ITracker<Income, Budget> tracker)
     {
         _incomeService = incomeService;
         _mapper = mapper;
+        _tracker = tracker;
     }
 
     [HttpPost]
     public async Task<IActionResult> LogIncome([FromBody] CreateIncomeRequest createIncomeRequest)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
 
         var income = _mapper.Map<Income>(createIncomeRequest);
         income.UserId = Guid.Parse(userId);
 
         var result = await _incomeService.CreateAsync(income);
 
-        if (result)
+        if (!result)
         {
-            return Ok($"Income logged successfully");
+            return StatusCode(500, "Error saving income.");
         }
-        
-        return StatusCode(500, "Error saving income.");
+
+        try
+        {
+            await _tracker.TrackNewUserEntry(income, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
+        return Ok($"Income logged successfully");
+
     }
 
 
@@ -47,6 +65,11 @@ public class IncomesController : ControllerBase
     public async Task<IActionResult> GetAllIncomes()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return BadRequest("User not found");
+        }
+
         var incomes = await _incomeService.GetIncomesByUserIdAsync(Guid.Parse(userId));
 
         if (incomes == null || !incomes.Any())
@@ -54,67 +77,107 @@ public class IncomesController : ControllerBase
             return NotFound("No incomes found for the current user.");
         }
 
-        return Ok(incomes);
+        var incomesResponse = _mapper.Map<IncomeResponse[]>(incomes);
+
+        return Ok(incomesResponse);
     }
 
 
     [HttpGet("{id}")]
-public async Task<IActionResult> GetIncomeById(Guid id)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-    var income = await _incomeService.GetByIdAsync(id);
-
-    if (income == null || income.UserId != Guid.Parse(userId))
-    {
-        return NotFound("Income not found or you do not have permission to access this income.");
-    }
-
-    return Ok(income);
-}
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateIncome(Guid id, [FromBody] UpdateIncomeRequest updateIncomeRequest)
+    public async Task<IActionResult> GetIncomeById(Guid id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return BadRequest("User not found");
+        }
 
         var income = await _incomeService.GetByIdAsync(id);
 
         if (income == null || income.UserId != Guid.Parse(userId))
         {
+            return NotFound("Income not found or you do not have permission to access this income.");
+        }
+
+        var incomeResponse = _mapper.Map<IncomeResponse>(income);
+
+        return Ok(incomeResponse);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateIncome(Guid id, [FromBody] UpdateIncomeRequest updateIncomeRequest)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
+        var oldIncome = await _incomeService.GetByIdAsync(id);
+
+        if (oldIncome == null || oldIncome.UserId != Guid.Parse(userId))
+        {
             return NotFound("Income not found or you do not have permission to update this income.");
         }
-        
-        income.Currency = updateIncomeRequest.Currency;
-        income.Source = updateIncomeRequest.Source;
-        income.Amount = updateIncomeRequest.Amount;
-        income.Date = updateIncomeRequest.Date;
 
-        var result = await _incomeService.UpdateAsync(income);
+        var newIncome = _mapper.Map<Income>(updateIncomeRequest);
+        newIncome.Id = oldIncome.Id;
+        newIncome.UserId = oldIncome.UserId;
 
-        if (result)
+        var result = await _incomeService.UpdateAsync(newIncome);
+
+        if (!result)
         {
-            return Ok("Income updated successfully.");
+            return StatusCode(500, "Error updating income.");
         }
 
-        return StatusCode(500, "Error updating income.");
+        try
+        {
+            await _tracker.TrackUpdatedUserEntry(oldIncome, newIncome, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
+        return Ok("Income updated successfully.");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(Guid id)
     {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId is null || userEmail is null)
+        {
+            return BadRequest("User not found");
+        }
+
         var income = await _incomeService.GetByIdAsync(id);
-        if (income == null || income.UserId != userId)
+        if (income == null || income.UserId != Guid.Parse(userId))
         {
             return NotFound("Income not found or you do not have permission to delete this income.");
         }
-        var result = await _incomeService.DeleteAsync(id); 
-        if (result)
+        var result = await _incomeService.DeleteAsync(id);
+
+        if (!result)
         {
-            return Ok("Income deleted successfully.");
+            return StatusCode(500, "Error deleting income.");
         }
-        return StatusCode(500, "Error deleting income.");
+
+        try
+        {
+            await _tracker.TrackDeletedUserEntry(income, userEmail);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(400, $"{exception.Message}");
+        }
+
+        return Ok("Income deleted successfully.");
     }
 
 }
