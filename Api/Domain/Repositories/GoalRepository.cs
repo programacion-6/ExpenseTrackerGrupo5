@@ -20,7 +20,7 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
             goal.Id,
             UserId = goal.user_id,
             goal.Currency,
-            goal.GoalAmount,
+            GoalAmount = goal.goal_amount,
             goal.Deadline,
             goal.CurrentAmount,
             goal.CreatedAt
