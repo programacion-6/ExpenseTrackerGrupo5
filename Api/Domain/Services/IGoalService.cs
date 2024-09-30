@@ -8,4 +8,5 @@ public interface IGoalService
     public Task<Goal> GetByIdAsync(Guid id);
     public Task<IEnumerable<Goal>> GetAllAsync();
     public Task<List<Goal>> GetActiveUserGoals(Guid userId);
+    public Task<List<Goal>>GetGoalsByUserId(Guid userId);
 }

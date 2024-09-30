@@ -55,12 +55,28 @@ public class GoalsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGoalById(Guid id)
     {
-        return Ok("goal");
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var goal = await _goalService.GetByIdAsync(id);
+        if (goal == null || goal.user_id != userId)
+        {
+            return NotFound($"Goal with ID {id} not found.");
+        }
+        return Ok(goal);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGoal(Guid id)
     {
-        return Ok($"Goal with ID {id} deleted successfully.");
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var goal = await _goalService.GetByIdAsync(id);
+        if (goal == null)
+        {
+            return NotFound($"Goal with ID {id} not found.");
+        }
+        var result = await _goalService.DeleteAsync(id);
+        if (result){
+            return Ok ("Goal deleted successfully.");
+        }
+        return StatusCode(500, "Error deleting goal.");
     }
 }

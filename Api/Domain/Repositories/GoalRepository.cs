@@ -41,7 +41,8 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
     }
 
     public async Task<Goal?> GetById(Guid goalId){
-        return new Goal();
+        var query = "SELECT * FROM goals WHERE id = @Id";
+        return await _dbConnection.QuerySingleOrDefaultAsync<Goal>(query, new { Id = goalId });
     }
 
     public async Task<List<Goal>> GetAll(){
@@ -51,5 +52,10 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
 
     public List<Goal> GetActiveUserGoals(Guid userId){
         return new List<Goal>();
+    }
+
+    public async Task<List<Goal>> GetGoalsByUserId(Guid userId){
+        var query = "SELECT * FROM goals WHERE user_id = @UserId";
+        return (await _dbConnection.QueryAsync<Goal>(query, new { UserId = userId })).AsList();
     }
 }

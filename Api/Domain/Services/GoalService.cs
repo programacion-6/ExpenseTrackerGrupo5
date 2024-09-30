@@ -43,4 +43,8 @@ public class GoalService : IGoalService
     {
         return _goalRepository.GetActiveUserGoals(userId);
     }
+    public async Task<List<Goal>> GetGoalsByUserId(Guid userId)
+    {
+        return await _goalRepository.GetGoalsByUserId(userId);
+    }
 }
