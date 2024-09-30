@@ -73,10 +73,6 @@ public class ExpensesController : ControllerBase
             
             if (expenseUserId == null)
                 return NotFound("Expense not found ");
-            Console.WriteLine("***************************");
-            Console.WriteLine(userId);
-            Console.WriteLine(expenseUserId);
-            Console.WriteLine("***************************");
             if (expenseUserId.ToString() != userId)
                 return NotFound("You do not have permission to view this expense.");
             
@@ -94,27 +90,25 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
-
-            if (expenseUserId == null)
-                return NotFound("Expense not found.");
-        
-            if (expenseUserId != userId)
-                return Forbid("You do not have permission to update this expense.");
-
-            var existingExpense = await _expenseService.GetByIdAsync(id);
-            if (existingExpense == null)
-                return NotFound("Expense not found.");
-
-            var expenseToUpdate = _mapper.Map(updateExpenseRequest, existingExpense);
-            expenseToUpdate.Id = id;
-
-            var success = await _expenseService.UpdateAsync(expenseToUpdate);
-            if (success)
-                return Ok("Expense updated successfully.");
-
-            return StatusCode(500, "An error occurred while updating the expense.");
+            var expense = await _expenseService.GetByIdAsync(id);
+            
+            if (expense == null || expenseUserId != Guid.Parse(userId))
+                return NotFound("Income not found or you do not have permission to update this income."); 
+            
+            expense.Currency = updateExpenseRequest.Currency;
+            expense.Amount = updateExpenseRequest.Amount;
+            expense.Description = updateExpenseRequest.Description;
+            expense.Category = updateExpenseRequest.Category;
+            expense.Date = updateExpenseRequest.Date;
+            
+            var result = await _expenseService.UpdateAsync(expense);
+            
+            if (result)
+                return Ok("Expense updated successfully"); 
+            
+            return StatusCode(500, "Error updating expense.");
         }
         catch (Exception e)
         {
