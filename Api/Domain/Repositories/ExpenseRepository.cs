@@ -74,7 +74,7 @@ public class ExpenseRepository : IExpenseRepository
         var query = @"
         SELECT * 
         FROM expenses 
-        WHERE user_id = @UserId 
+        WHERE userid = @UserId 
         AND EXTRACT(MONTH FROM date) = @Month 
         AND EXTRACT(YEAR FROM date) = @Year";
 
