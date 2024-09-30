@@ -18,6 +18,7 @@ public static class DependencyInjector
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IIncomeRepository, IncomeRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
     }
 
     private static void InjectServices(IServiceCollection services)
@@ -25,6 +26,7 @@ public static class DependencyInjector
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<INotifier<EmailContent>, EmailNotifier>();
         services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<ITracker<Income, Budget>, IncomeTrackerForBudget>();
         services.AddScoped<ITracker<Expense, Budget>, ExpenseTrackerForBudget>();

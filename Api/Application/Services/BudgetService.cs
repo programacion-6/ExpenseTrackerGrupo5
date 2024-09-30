@@ -17,20 +17,7 @@ public class BudgetService : IBudgetService
         var currentUserBudget = await _budgetRepository.GetUserBudgetByMonth(userId, currentMonth);
         if (currentUserBudget is null)
         {
-            var emptyUserBudget = new Budget()
-            {
-                UserId = userId,
-                Amount = 0,
-                CurrentAmount = 0,
-                Currency = "BS",
-                Month = DateTime.Today
-            };
-
-            var wasSaved = await _budgetRepository.Save(emptyUserBudget);
-
-            return !wasSaved
-                ? throw new Exception("An error occurred while saving the budget")
-                : emptyUserBudget;
+            return await CreateEmptyUserBudget(userId, DateTime.Now);
         }
 
         return currentUserBudget;
@@ -112,5 +99,32 @@ public class BudgetService : IBudgetService
         {
             throw new Exception("Budget not found");
         }
+    }
+
+    public async Task<Budget> CreateEmptyUserBudget(Guid userId, DateTime month)
+    {
+        var emptyUserBudget = new Budget()
+        {
+            UserId = userId,
+            Amount = 0,
+            CurrentAmount = 0,
+            Currency = "BS",
+            Month = month
+        };
+
+        var wasSaved = await _budgetRepository.Save(emptyUserBudget);
+
+        return !wasSaved
+            ? throw new Exception("An error occurred while saving the budget")
+            : emptyUserBudget;
+    }
+
+    public async Task<Budget> GetUserBudgetByMonthOrCreate(Guid userId, DateTime month)
+    {
+        var budgetFound = await GetUserBudgetByMonth(userId, month);
+        
+        return budgetFound is null
+                ? await CreateEmptyUserBudget(userId, month)
+                : budgetFound;
     }
 }
