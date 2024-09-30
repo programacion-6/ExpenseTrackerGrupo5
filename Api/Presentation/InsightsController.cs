@@ -1,5 +1,7 @@
 using System.Security.Claims;
 
+using Api.Application;
+
 using Api.Domain;
 
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +20,7 @@ public class InsightsController : ControllerBase
     }
 
     [HttpGet("monthlyexpenses")]
-    public async Task<IActionResult> GetMonthlySummary()
+    public async Task<IActionResult> GetMonthlySummary([FromQuery] DateTime? month)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -27,10 +29,17 @@ public class InsightsController : ControllerBase
             return BadRequest("User not found");
         }
 
+        var summaryDate = month ?? DateTime.Today;
+
+        if (DateChecker.IsGreaterThanThisMonth(summaryDate))
+        {
+            return BadRequest("The date must be less than or equal to the current month and year.");
+        }
+
         try
         {
             var guidUserId = Guid.Parse(userId);
-            var monthlySummary = await _reportService.GetUserMonthlySummary(guidUserId);
+            var monthlySummary = await _reportService.GetUserMonthlySummary(guidUserId, summaryDate);
 
             return Ok(monthlySummary);
         }

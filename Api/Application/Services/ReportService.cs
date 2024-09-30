@@ -1,18 +1,18 @@
-
 using Api.Domain;
-using Api.Domain.Services;
 
 namespace Api.Application;
 
 public class ReportService : IReportService
 {
     private readonly IBudgetService _budgetService;
-    private readonly IIncomeService _incomeService;
+    private readonly IIncomeRepository _incomeRepository;
+    private readonly IExpenseRepository _expenseRepository;
 
-    public ReportService(IBudgetService budgetService, IIncomeService incomeService)
+    public ReportService(IBudgetService budgetService, IIncomeRepository incomeRepository, IExpenseRepository expenseRepository)
     {
         _budgetService = budgetService;
-        _incomeService = incomeService;
+        _incomeRepository = incomeRepository;
+        _expenseRepository = expenseRepository;
     }
 
     public Task<ExpenseInsightsResponse> GetUserExpenseInsightsResponse(Guid userId)
@@ -20,39 +20,45 @@ public class ReportService : IReportService
         throw new NotImplementedException();
     }
 
-    public async Task<MonthlySummaryResponse> GetUserMonthlySummary(Guid userId)
+    public async Task<MonthlySummaryResponse> GetUserMonthlySummary(Guid userId, DateTime month)
     {
         decimal initTotalValue = 0;
-        var allUserIncomes = await _incomeService.GetIncomesByUserIdAsync(userId);
-        var currentBudget = await _budgetService.GetCurrentUserBudget(userId);
-        var allUserExpenses = new List<Expense>();
+        var allUserIncomes = await _incomeRepository.GetAllUserIncomesByMonth(userId, month);
+        var allUserExpenses = await _expenseRepository.GetAllUserExpensesByMonth(userId, month);
+        var budget = await _budgetService.GetUserBudgetByMonthOrCreate(userId, month);
 
         var totalIncome = allUserIncomes.Aggregate(
                             initTotalValue, (acc, income) => acc + income.Amount);
-        var remainingBudget = currentBudget.Amount - currentBudget.CurrentAmount;
-        var highestSpendingCategory = string.Empty;
-
-        if (allUserExpenses.Count != 0) {
-            highestSpendingCategory = allUserExpenses
-                                        .GroupBy(expense => expense.Category)
-                                        .OrderByDescending(group => group.Count())
-                                        .Select(group => group.Key)
-                                        .FirstOrDefault();
-        }
-        
-        var currency = currentBudget.Currency;
+        var remainingBudget = budget.CurrentAmount;
+        var highestSpendingCategory = FindHighestSpendingCategory(allUserExpenses);
+        var currency = budget.Currency;
         var totalExpenses = allUserExpenses.Aggregate(
                             initTotalValue, (acc, expense) => acc + expense.Amount);
 
         var monthlySummary = new MonthlySummaryResponse(
-                                 totalIncome, 
-                                 totalExpenses, 
-                                 remainingBudget, 
-                                 highestSpendingCategory ?? string.Empty, 
+                                 totalIncome,
+                                 totalExpenses,
+                                 remainingBudget,
+                                 highestSpendingCategory,
                                  currency
                              );
 
         return monthlySummary;
+    }
+
+    private string FindHighestSpendingCategory(List<Expense> allUserExpenses)
+    {
+        var highestSpendingCategory = allUserExpenses
+                        .GroupBy(expense => expense.Category)
+                        .Select(group => new
+                        {
+                            Category = group.Key,
+                            TotalAmount = group.Sum(expense => expense.Amount)
+                        })
+                        .OrderByDescending(x => x.TotalAmount)
+                        .FirstOrDefault();
+
+        return highestSpendingCategory?.Category ?? string.Empty;
     }
 
 }
