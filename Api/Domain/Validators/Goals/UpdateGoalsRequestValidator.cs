@@ -3,9 +3,9 @@ namespace Api.Domain.Validators;
 using FluentValidation;
 using Api.Domain;
 
-public class CreateGoalsRequestValidator : AbstractValidator<CreateGoalRequest>
+public class UpdateGoalsRequestValidator : AbstractValidator<UpdateGoalRequest>
 {
-    public CreateGoalsRequestValidator()
+    public UpdateGoalsRequestValidator()
     {
         RuleFor(goals => goals.Currency)
             .NotEmpty()

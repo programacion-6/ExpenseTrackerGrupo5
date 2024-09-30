@@ -39,6 +39,34 @@ public class GoalsController : ControllerBase
         return StatusCode(500, "Error saving goal.");
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateGoal(Guid id, [FromBody] UpdateGoalRequest updateGoalRequest)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var goal = await _goalService.GetByIdAsync(id);
+
+        if (goal == null || goal.user_id != Guid.Parse(userId))
+        {
+            return NotFound("Goal not found or you do not have permission to update this goal.");
+        }
+        
+        goal.Currency = updateGoalRequest.Currency;
+        goal.goal_amount = updateGoalRequest.goal_amount;
+        goal.Deadline = updateGoalRequest.Deadline;
+
+        var result = await _goalService.UpdateAsync(goal);
+
+        if (result)
+        {
+            return Ok("Goal updated successfully.");
+        }
+
+        return StatusCode(500, "Error updating goal.");
+    }
+
+
+
     [HttpGet]
     public async Task<IActionResult> GetAllGoals()
     {

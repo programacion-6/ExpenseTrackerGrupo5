@@ -36,9 +36,25 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
         return result > 0;
     }
 
-    public async Task<bool> Update(Goal goal){
-        return true;
-    }
+    public async Task<bool> Update(Goal goal)
+{
+    var query = @"UPDATE goals 
+                  SET goal_amount = @GoalAmount, 
+                      deadline = @Deadline, 
+                      currency = @Currency 
+                  WHERE id = @Id";
+
+    var result = await _dbConnection.ExecuteAsync(query, new
+    {
+        GoalAmount = goal.goal_amount,
+        goal.Deadline,
+        goal.Currency,
+        goal.Id
+    });
+
+    return result > 0;
+}
+
 
     public async Task<Goal?> GetById(Guid goalId){
         var query = "SELECT * FROM goals WHERE id = @Id";
