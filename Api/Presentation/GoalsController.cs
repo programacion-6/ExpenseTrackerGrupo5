@@ -82,7 +82,13 @@ public class GoalsController : ControllerBase
     [HttpGet("actives")]
     public async Task<IActionResult> GetActiveGoals()
     {
-        return Ok("activeGoals");
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var activeGoals = await _goalService.GetActiveUserGoals(userId);
+        if (!activeGoals.Any())
+        {
+            return NotFound("No active goals found.");
+        }
+        return Ok(activeGoals);
     }
 
     [HttpGet("{id}")]

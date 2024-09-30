@@ -66,8 +66,14 @@ public class GoalRepository (IDbConnection connection) : IGoalRepository
         return (await _dbConnection.QueryAsync<Goal>(query)).AsList();
     }
 
-    public List<Goal> GetActiveUserGoals(Guid userId){
-        return new List<Goal>();
+    public async Task<List<Goal>> GetActiveUserGoals(Guid userId)
+    {
+        var query = @"
+            SELECT * 
+            FROM goals 
+            WHERE user_id = @UserId AND goal_amount != current_amount";
+        
+        return (await _dbConnection.QueryAsync<Goal>(query, new { UserId = userId })).AsList();
     }
 
     public async Task<List<Goal>> GetGoalsByUserId(Guid userId){
