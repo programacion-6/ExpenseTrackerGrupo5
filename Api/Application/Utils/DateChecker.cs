@@ -14,4 +14,13 @@ public static class DateChecker
 
         return AreSameDate(currentDate, date);
     }
+
+    public static bool IsGreaterThanThisMonth(DateTime date)
+    {
+        var currentDate = DateTime.Today;
+
+        return date.Year > currentDate.Year ||
+                (date.Year == currentDate.Year &&
+                    date.Month > currentDate.Month);
+    }
 }
