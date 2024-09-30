@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS budgets (
 
 CREATE TABLE IF NOT EXISTS expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     currency VARCHAR NOT NULL,
     amount DECIMAL NOT NULL,
     description VARCHAR NOT NULL,
