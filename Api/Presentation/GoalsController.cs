@@ -65,12 +65,17 @@ public class GoalsController : ControllerBase
         return StatusCode(500, "Error updating goal.");
     }
 
-
-
     [HttpGet]
     public async Task<IActionResult> GetAllGoals()
     {
-        var goals = await _goalService.GetAllAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var goals = await _goalService.GetGoalsByUserId(Guid.Parse(userId));
+
+        if (goals == null || !goals.Any())
+        {
+            return NotFound("No goals found for the current user.");
+        }
+
         return Ok(goals);
     }
 
