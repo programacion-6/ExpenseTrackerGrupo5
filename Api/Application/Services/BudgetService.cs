@@ -35,7 +35,6 @@ public class BudgetService : IBudgetService
 
         if (currentUserBudget is not null)
         {
-            budget.CurrentAmount = budget.Amount;
             var newBudget = SetNewBudgetAmount(currentUserBudget, budget);
             var wasUpdated = await _budgetRepository.Update(newBudget);
             if (!wasUpdated)
@@ -45,6 +44,7 @@ public class BudgetService : IBudgetService
         }
         else
         {
+            budget.CurrentAmount = budget.Amount;
             var wasSaved = await _budgetRepository.Save(budget);
             if (!wasSaved)
             {
