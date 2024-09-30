@@ -16,9 +16,9 @@ public class ExpenseTrackerForBudget : ITracker<Expense, Budget>
 
     public async Task TrackNewUserEntry(Expense expense, string userEmail)
     {
-        var currentBudget = await _budgetService.GetCurrentUserBudget(expense.UserId);
-        currentBudget.CurrentAmount -= expense.Amount;
-        await NotifyTrackingToUser(currentBudget, userEmail);
+        var budget = await _budgetService.GetUserBudgetByMonthOrCreate(expense.UserId, expense.Date);
+        budget.CurrentAmount -= expense.Amount;
+        await NotifyTrackingToUser(budget, userEmail);
     }
 
     public async Task TrackDeletedUserEntry(Expense expense, string userEmail)

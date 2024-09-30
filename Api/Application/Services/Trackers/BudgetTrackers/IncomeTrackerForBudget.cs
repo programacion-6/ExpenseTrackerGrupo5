@@ -16,9 +16,9 @@ public class IncomeTrackerForBudget : ITracker<Income, Budget>
 
     public async Task TrackNewUserEntry(Income income, string userEmail)
     {
-        var currentBudget = await _budgetService.GetCurrentUserBudget(income.UserId);
-        currentBudget.CurrentAmount += income.Amount;
-        await NotifyTrackingToUser(currentBudget, userEmail);
+        var budget = await _budgetService.GetUserBudgetByMonthOrCreate(income.UserId, income.Date);
+        budget.CurrentAmount += income.Amount;
+        await NotifyTrackingToUser(budget, userEmail);
     }
 
     public async Task TrackUpdatedUserEntry(Income oldIncome, Income newIncome, string userEmail)
