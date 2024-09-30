@@ -53,6 +53,23 @@ public class InsightsController : ControllerBase
     public async Task<IActionResult> GetExpenseInsights()
     {
 
-        return Ok("expense insights");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return BadRequest("User not found");
+        }
+
+        try
+        {
+            var guidUserId = Guid.Parse(userId);
+            var expenseInsightsResponse = await _reportService.GetUserExpenseInsightsResponse(guidUserId);
+
+            return Ok(expenseInsightsResponse);
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, $"Internal server error: {exception.Message}");
+        }
     }
 }
