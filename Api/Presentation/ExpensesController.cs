@@ -95,10 +95,17 @@ public class ExpensesController : ControllerBase
         try
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
+
+            if (expenseUserId == null)
+                return NotFound("Expense not found.");
+        
+            if (expenseUserId != userId)
+                return Forbid("You do not have permission to update this expense.");
 
             var existingExpense = await _expenseService.GetByIdAsync(id);
-            if (existingExpense == null || existingExpense.UserId != userId)
-                return NotFound("Expense not found or you do not have permission to update this expense.");
+            if (existingExpense == null)
+                return NotFound("Expense not found.");
 
             var expenseToUpdate = _mapper.Map(updateExpenseRequest, existingExpense);
             expenseToUpdate.Id = id;
@@ -121,11 +128,14 @@ public class ExpensesController : ControllerBase
         try
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var expenseUserId = await _expenseService.GetUserIdByExpenseId(id);
             var existingExpense = await _expenseService.GetByIdAsync(id);
 
-            if (existingExpense == null || existingExpense.UserId != userId)
-                return NotFound("Expense not found or you do not have permission to delete this expense.");
+            if (existingExpense == null)
+                return NotFound("Expense not found");
 
+            if (expenseUserId != userId)
+                return NotFound("You do not have permission to delete this expense.");
             var success = await _expenseService.DeleteAsync(id);
             if (success)
                 return Ok("Expense deleted successfully.");
