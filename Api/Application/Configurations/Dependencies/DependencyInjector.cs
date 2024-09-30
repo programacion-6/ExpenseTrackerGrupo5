@@ -32,6 +32,7 @@ public static class DependencyInjector
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<ITracker<Income, Budget>, IncomeTrackerForBudget>();
         services.AddScoped<ITracker<Expense, Budget>, ExpenseTrackerForBudget>();
+        services.AddScoped<IReportService, ReportService>();
     }
 
     private static void InjectUtilsHandlers(IServiceCollection services)

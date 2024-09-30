@@ -44,6 +44,7 @@ public class BudgetService : IBudgetService
         }
         else
         {
+            budget.CurrentAmount = budget.Amount;
             var wasSaved = await _budgetRepository.Save(budget);
             if (!wasSaved)
             {

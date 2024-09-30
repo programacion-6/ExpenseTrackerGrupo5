@@ -1,6 +1,7 @@
 namespace Api.Domain;
 
 using Dapper;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -61,12 +62,32 @@ public class ExpenseRepository : IExpenseRepository
         var query = "SELECT * FROM expenses WHERE userid = @UserId AND category = @Category";
         return _dbConnection.Query<Expense>(query, new { UserId = userId, Category = category }).AsList();
     }
-    
+
     public async Task<List<Expense>> GetAllByUser(Guid userId)
     {
         var query = "SELECT * FROM expenses WHERE userid = @UserId";
         return _dbConnection.Query<Expense>(query, new { UserId = userId }).AsList();
     }
+
+    public async Task<List<Expense>> GetAllUserExpensesByMonth(Guid userId, DateTime month)
+    {
+        var query = @"
+        SELECT * 
+        FROM expenses 
+        WHERE userid = @UserId 
+        AND EXTRACT(MONTH FROM date) = @Month 
+        AND EXTRACT(YEAR FROM date) = @Year";
+
+        var parameters = new
+        {
+            UserId = userId,
+            Month = month.Month,
+            Year = month.Year
+        };
+
+        return (await _dbConnection.QueryAsync<Expense>(query, parameters)).AsList();
+    }
+
     
     public async Task<Guid?> GetUserIdByExpenseId(Guid expenseId)
     {
