@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+
 using Dapper;
 
 public class IncomeRepository(IDbConnection connection) : IIncomeRepository
@@ -23,7 +24,7 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
         var result = _dbConnection.Execute(query, new { item.Id });
         return result > 0;
     }
-    
+
     public async Task<bool> Update(Income item)
     {
         var query = "UPDATE Incomes SET UserId = @UserId, Source = @Source, Amount = @Amount, Date = @Date, currency = @Currency WHERE Id = @Id";
@@ -54,4 +55,24 @@ public class IncomeRepository(IDbConnection connection) : IIncomeRepository
         var query = "SELECT * FROM Incomes WHERE UserId = @UserId";
         return (await _dbConnection.QueryAsync<Income>(query, new { UserId = userId })).AsList();
     }
+
+    public async Task<List<Income>> GetAllUserIncomesByMonth(Guid userId, DateTime month)
+    {
+        var query = @"
+        SELECT * 
+        FROM Incomes 
+        WHERE UserId = @UserId 
+        AND EXTRACT(MONTH FROM Date) = @Month 
+        AND EXTRACT(YEAR FROM Date) = @Year";
+
+        var parameters = new
+        {
+            UserId = userId,
+            Month = month.Month,
+            Year = month.Year
+        };
+
+        return (await _dbConnection.QueryAsync<Income>(query, parameters)).AsList();
+    }
+
 }
