@@ -30,9 +30,9 @@ public class ExpenseService : IExpenseService
         return await _expenseRepository.GetById(id);
     }
 
-    public async Task<Task<List<Expense>>> GetAllAsync()
+    public async Task<IEnumerable<Expense>> GetAllByUserAsync(Guid userId)
     {
-        return _expenseRepository.GetAll();
+        return await _expenseRepository.GetAllByUser(userId);
     }
 
     public async Task<IEnumerable<Expense>> GetUserExpensesByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate)

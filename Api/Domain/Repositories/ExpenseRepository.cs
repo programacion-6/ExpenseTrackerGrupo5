@@ -61,4 +61,10 @@ public class ExpenseRepository : IExpenseRepository
         var query = "SELECT * FROM expenses WHERE user_id = @UserId AND category = @Category";
         return _dbConnection.Query<Expense>(query, new { UserId = userId, Category = category }).AsList();
     }
+    
+    public async Task<List<Expense>> GetAllByUser(Guid userId)
+    {
+        var query = "SELECT * FROM expenses WHERE user_id = @UserId";
+        return _dbConnection.Query<Expense>(query, new { UserId = userId }).AsList();
+    }
 }

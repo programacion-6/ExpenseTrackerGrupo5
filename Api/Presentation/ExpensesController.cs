@@ -47,11 +47,14 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllExpenses()
+    public async Task<IActionResult> GetAllByUserAsync()
     {
         try
         {
-            var expenses = await _expenseService.GetAllAsync();
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            var expenses = await _expenseService.GetAllByUserAsync(userId);
+
             return Ok(_mapper.Map<IEnumerable<ExpenseResponse>>(expenses));
         }
         catch (Exception e)
